@@ -1,0 +1,2244 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Hören">
+<meta name="theme-color" content="#F3F5F7">
+<title>Hören-Trainer</title>
+<style>
+:root{
+  --paper:#F3F5F7; --card:#FFFFFF; --ink:#152238; --cell:#274C77; --cell-2:#1B3657;
+  --frame:#C9D2DC; --muted:#5E6B7C; --sun:#F2B544; --sun-soft:#FCEFD2; --ok:#2E7D5B; --warn:#B4442F;
+  --serif: Charter, "Iowan Old Style", Georgia, serif;
+  --sans: -apple-system, system-ui, "Segoe UI", Roboto, sans-serif;
+  --safe-b: env(safe-area-inset-bottom, 0px);
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--paper);color:var(--ink);font-family:var(--sans);-webkit-text-size-adjust:100%}
+button,input,select{font:inherit;color:inherit}
+button{touch-action:manipulation;cursor:pointer}
+:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
+[hidden]{display:none!important}
+.fa{direction:rtl;text-align:right;font-family:var(--sans)}
+
+/* ---------- library ---------- */
+#lib{max-width:720px;margin:0 auto;padding:calc(env(safe-area-inset-top,0px) + 20px) 18px calc(var(--safe-b) + 40px)}
+.brand{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:22px}
+.brand h1{font-family:var(--serif);font-weight:700;font-size:34px;line-height:1.05;margin:0;letter-spacing:-.01em}
+.brand p{margin:6px 0 0;color:var(--muted);font-size:15px}
+.linkbtn{background:none;border:0;color:var(--cell);font-weight:600;padding:8px 0;font-size:15px}
+.primary{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;background:var(--cell);color:#fff;border:0;border-radius:14px;padding:16px;font-size:17px;font-weight:600}
+.primary:active{background:var(--cell-2)}
+.secondary{background:var(--card);border:1.5px solid var(--frame);color:var(--ink);border-radius:12px;padding:11px 14px;font-weight:600;font-size:15px}
+.tabs{display:flex;gap:6px;margin:26px 0 12px;border-bottom:1.5px solid var(--frame);overflow-x:auto;scrollbar-width:none;white-space:nowrap}
+.tabs::-webkit-scrollbar{display:none}
+.tabs button{background:none;border:0;padding:10px 4px;margin-right:14px;font-size:16px;font-weight:600;color:var(--muted);border-bottom:3px solid transparent;margin-bottom:-1.5px}
+.tabs button[aria-selected=true]{color:var(--ink);border-color:var(--sun)}
+.rec{display:grid;grid-template-columns:1fr auto;gap:4px 10px;background:var(--card);border-radius:14px;padding:14px 16px;margin-bottom:10px;border:1px solid #E1E6EC}
+.rec .name{font-weight:600;font-size:17px;border:0;background:none;text-align:left;padding:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rec .meta{grid-column:1;font-size:14px;color:var(--muted)}
+.rec .acts{grid-row:1/3;grid-column:2;display:flex;gap:4px;align-items:center}
+.icon{width:40px;height:40px;border-radius:10px;border:0;background:transparent;display:grid;place-items:center;color:var(--muted)}
+.icon:active{background:#E7ECF1}
+.empty{border:1.5px dashed var(--frame);border-radius:14px;padding:22px;color:var(--muted);line-height:1.6}
+.vocab{background:var(--card);border-radius:12px;padding:12px 14px;margin-bottom:8px;border:1px solid #E1E6EC}
+.vocab b{font-size:17px}
+.vocab .fa{font-size:15px;margin-top:2px}
+.vocab .en{color:var(--muted);font-size:14px}
+.vocab .ctx{font-family:var(--serif);font-size:14px;color:var(--muted);margin-top:6px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+
+/* ---------- player ---------- */
+#player{position:fixed;inset:0;display:flex;flex-direction:column}
+.topbar{display:flex;align-items:center;gap:6px;padding:calc(env(safe-area-inset-top,0px) + 6px) 8px 6px;background:var(--paper);border-bottom:1px solid #DDE3EA}
+.topbar h2{flex:1;font-size:16px;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600}
+.tx{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:18px 20px 40px;max-width:760px;width:100%;margin:0 auto;scroll-padding:30vh}
+.seg{position:relative;font-family:var(--serif);font-size:20px;line-height:1.62;margin:0 0 14px;padding:4px 0 4px 14px;border-left:3px solid transparent;border-radius:2px}
+.seg .ts{display:block;font-family:var(--sans);font-size:12px;font-weight:600;color:var(--muted);background:none;border:0;padding:0 0 2px;font-variant-numeric:tabular-nums}
+.seg.cur{border-left-color:var(--sun);background:linear-gradient(90deg,var(--sun-soft),rgba(252,239,210,0) 85%)}
+.w{cursor:pointer;border-radius:4px;-webkit-tap-highlight-color:rgba(242,181,68,.35)}
+.w.now{background:var(--sun);color:var(--ink);box-shadow:0 0 0 2px var(--sun)}
+.tx.m-hide .seg:not(.rev) .txt,.tx.m-after .seg:not(.rev) .txt{filter:blur(7px);user-select:none;-webkit-user-select:none}
+.tx.m-hide .seg:not(.rev)::after,.tx.m-after .seg:not(.rev)::after{content:"Tippen zum Aufdecken";position:absolute;left:14px;bottom:8px;font:600 12px var(--sans);color:var(--cell);opacity:.8}
+.alt{font-family:var(--serif);font-size:16px;line-height:1.5;color:var(--muted);margin-top:6px;padding:6px 10px;background:#EAEFF4;border-radius:8px}
+.alt .altl{display:block;font:600 11px var(--sans);color:var(--cell);margin-bottom:2px}
+.alt .use{float:right;margin:-2px -4px 0 8px;border:1.5px solid var(--frame);background:var(--card);border-radius:999px;padding:3px 10px;font:600 12px var(--sans);color:var(--cell)}
+.tx.m-hide .seg:not(.rev) .alt,.tx.m-after .seg:not(.rev) .alt{display:none}
+.w.fw{text-decoration:underline dotted var(--cell);text-decoration-thickness:1.5px;text-underline-offset:5px}
+.gadd{display:grid;grid-template-columns:1fr 1fr auto;gap:8px}
+@media (max-width:560px){.gadd{grid-template-columns:1fr}}
+.gadd input,.search,.sel{width:100%;border:1.5px solid var(--frame);border-radius:10px;padding:11px 12px;font-size:16px;background:var(--card)}
+.search{margin:4px 0 10px}
+.gadd .primary{padding:11px 16px;font-size:15px;width:auto}
+.gitem{display:flex;justify-content:space-between;align-items:center;gap:8px;background:var(--card);border:1px solid #E1E6EC;border-radius:12px;padding:10px 12px;margin-bottom:6px}
+.gitem .fa{font-size:14px;color:var(--muted)}
+.tag{font:600 11px var(--sans);color:var(--cell);background:#E6EEF6;border-radius:6px;padding:1px 6px;vertical-align:2px}
+.stcats{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:10px 0 6px}
+.stcats::-webkit-scrollbar{display:none}
+.stcats .chip{white-space:nowrap;flex:none}
+.cnt{font-weight:600;color:var(--muted);font-size:12px}
+.chip[aria-pressed=true] .cnt{color:#C9D6E6}
+details.st{background:var(--card);border:1px solid #E1E6EC;border-radius:12px;padding:10px 14px;margin:8px 0}
+details.st summary{cursor:pointer;font-size:16px}
+details.st .ex{display:flex;gap:8px;align-items:flex-start;border-top:1px solid #EEF1F4;padding:8px 0}
+details.st .ex:first-of-type{margin-top:8px}
+.exs{font-family:var(--serif);font-size:17px;line-height:1.5}
+.exs mark{background:var(--sun-soft);box-shadow:inset 0 -2px 0 var(--sun);color:inherit;border-radius:3px;padding:0 2px}
+.gapw{border:0;border-bottom:2px solid var(--cell);background:#EEF3F8;color:var(--cell);font:600 15px var(--sans);border-radius:4px 4px 0 0;padding:0 4px;letter-spacing:1px}
+.icon.play{color:var(--cell);flex:none;width:36px;height:36px}
+.wbub{position:fixed;z-index:40;transform:translate(-50%,calc(-100% - 8px));background:var(--ink);color:#fff;border:0;border-radius:999px;padding:8px 14px;font:600 14px var(--sans);box-shadow:0 6px 18px rgba(0,0,0,.25)}
+.cloudbox{background:var(--card);border:1px solid #E1E6EC;border-radius:12px;padding:12px 14px;margin:8px 0}
+.field{display:block;margin:10px 0}
+.field span{display:block;font:600 13px var(--sans);color:var(--muted);margin-bottom:4px}
+.field input{width:100%;border:1.5px solid var(--frame);border-radius:10px;padding:11px 12px;font-size:16px;background:var(--card)}
+ol.steps{padding-left:22px;margin:6px 0 10px;font-size:14px;line-height:1.7;text-align:left}
+.notx{max-width:520px;margin:10vh auto 0;text-align:center;color:var(--muted);line-height:1.6}
+.notx h3{font-family:var(--serif);color:var(--ink);font-size:24px;margin:0 0 8px}
+
+/* shadow card */
+.shadow{display:none;padding:14px 18px;background:var(--card);border-top:1px solid #DDE3EA}
+.shadow.on{display:block}
+.shadow .phase{display:flex;justify-content:space-between;align-items:center;font-weight:700;font-size:15px}
+.shadow .phase .you{color:var(--ok)}
+.shadow .bar{height:5px;background:#E6EBF0;border-radius:3px;margin:8px 0 10px;overflow:hidden}
+.shadow .bar i{display:block;height:100%;width:0;background:var(--cell)}
+.shadow.gap .bar i{background:var(--ok)}
+.shadow .opts{display:flex;gap:8px;flex-wrap:wrap}
+.chip{border:1.5px solid var(--frame);background:var(--paper);border-radius:999px;padding:7px 12px;font-size:14px;font-weight:600}
+.chip[aria-pressed=true]{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+/* dock */
+.dock{background:var(--cell-2);color:#fff;padding:10px 14px calc(var(--safe-b) + 10px)}
+.scrub{position:relative;height:34px;touch-action:none}
+.scrub .rail{position:absolute;left:0;right:0;top:15px;height:4px;background:rgba(255,255,255,.22);border-radius:2px}
+.scrub .fill{position:absolute;left:0;top:15px;height:4px;background:var(--sun);border-radius:2px}
+.scrub .ticks{position:absolute;left:0;right:0;top:11px;height:12px;pointer-events:none}
+.scrub .ticks i{position:absolute;top:0;width:1px;height:12px;background:rgba(255,255,255,.28)}
+.scrub .knob{position:absolute;top:8px;width:18px;height:18px;margin-left:-9px;border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.35)}
+.times{display:flex;justify-content:space-between;font-size:12px;opacity:.8;font-variant-numeric:tabular-nums;margin-top:-4px}
+.transport{display:flex;justify-content:center;align-items:center;gap:14px;margin:4px 0 10px}
+.transport button{background:none;border:0;color:#fff;width:52px;height:52px;border-radius:50%;display:grid;place-items:center;position:relative}
+.transport button:active{background:rgba(255,255,255,.12)}
+.transport .skip small{position:absolute;left:50%;top:50%;transform:translate(-50%,-44%);font-size:9.5px;font-weight:800;pointer-events:none}
+.transport .play{width:66px;height:66px;background:var(--sun);color:var(--ink)}
+.transport .play:active{background:#E3A42E}
+.tools{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.tools::-webkit-scrollbar{display:none}
+.tool{flex:none;background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.18);color:#fff;border-radius:999px;padding:8px 13px;font-size:14px;font-weight:600;white-space:nowrap}
+.tool[aria-pressed=true]{background:#fff;color:var(--cell-2);border-color:#fff}
+
+/* sheets */
+.scrim{position:fixed;inset:0;background:rgba(21,34,56,.38);z-index:20}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:21;background:var(--card);border-radius:20px 20px 0 0;max-height:86vh;overflow-y:auto;padding:10px 20px calc(var(--safe-b) + 22px);max-width:720px;margin:0 auto;box-shadow:0 -8px 30px rgba(21,34,56,.18);animation:up .22s ease-out}
+@keyframes up{from{transform:translateY(24px);opacity:.4}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.sheet{animation:none}}
+.grab{width:40px;height:5px;border-radius:3px;background:var(--frame);margin:0 auto 12px}
+.sheet h3{font-family:var(--serif);font-size:24px;margin:4px 0 10px}
+.sheet h4{font-size:14px;color:var(--muted);margin:18px 0 8px;font-weight:600}
+.sheet label.opt{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1.5px solid var(--frame);border-radius:12px;margin-bottom:8px}
+.sheet label.opt:has(input:checked){border-color:var(--cell);background:#EEF3F8}
+.sheet label.opt small{display:block;color:var(--muted);font-size:13px;margin-top:2px}
+.sheet input[type=range]{width:100%;accent-color:var(--cell)}
+.sheet input[type=text],.sheet input[type=password],.sheet textarea{width:100%;border:1.5px solid var(--frame);border-radius:10px;padding:10px;font-size:16px;background:var(--paper)}
+.progress{height:8px;background:#E6EBF0;border-radius:4px;overflow:hidden;margin:12px 0 6px}
+.progress i{display:block;height:100%;width:0;background:var(--cell);transition:width .3s}
+.note{font-size:13px;color:var(--muted);line-height:1.5}
+.word{font-family:var(--serif);font-size:30px;font-weight:700;margin:0}
+.lemma{color:var(--muted);font-size:14px}
+.tr{margin:10px 0;padding:12px 14px;border-radius:12px;background:var(--paper)}
+.tr .fa{font-size:20px;font-weight:600}
+.tr .en{font-size:16px;color:var(--muted);margin-top:4px}
+.dict{font-size:14px;line-height:1.55;margin-top:6px}
+.ctxs{font-family:var(--serif);font-size:17px;line-height:1.5;border-left:3px solid var(--sun);padding-left:12px;margin:10px 0}
+.links{display:flex;flex-wrap:wrap;gap:8px}
+.links a{color:var(--cell);font-weight:600;font-size:14px;text-decoration:none;border:1.5px solid var(--frame);border-radius:999px;padding:6px 12px}
+.toast{position:fixed;left:50%;bottom:calc(var(--safe-b) + 190px);transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 16px;border-radius:12px;font-size:14px;z-index:40;max-width:90vw}
+.help{line-height:1.8;font-size:15px}
+.help ol{padding-right:20px;padding-left:0}
+</style>
+</head>
+<body>
+
+<!-- ================= LIBRARY ================= -->
+<main id="lib">
+  <div class="brand">
+    <div>
+      <h1>Hören-Trainer</h1>
+      <p>Meeting-Aufnahmen hören, verstehen, nachsprechen.</p>
+    </div>
+    <button class="linkbtn" id="helpBtn">راهنما</button>
+  </div>
+  <button class="primary" id="addBtn">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+    Aufnahme hinzufügen
+  </button>
+  <input type="file" id="fileIn" accept="audio/*,.m4a,.mp3,.wav,.aac,.caf,.mp4" multiple hidden>
+  <div class="tabs" role="tablist">
+    <button role="tab" aria-selected="true" data-tab="recs">Aufnahmen</button>
+    <button role="tab" aria-selected="false" data-tab="words">Wortliste</button>
+    <button role="tab" aria-selected="false" data-tab="gloss">Fachwörter</button>
+    <button role="tab" aria-selected="false" data-tab="struct">Strukturen</button>
+  </div>
+  <section id="recList"></section>
+  <section id="wordList" hidden></section>
+  <section id="glossList" hidden></section>
+  <section id="structList" hidden></section>
+</main>
+
+<!-- ================= PLAYER ================= -->
+<div id="player" hidden>
+  <div class="topbar">
+    <button class="icon" id="backBtn" aria-label="Zurück"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+    <h2 id="pTitle"></h2>
+    <button class="icon" id="txBtn" aria-label="Transkript"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 6h16M4 11h16M4 16h10"/></svg></button>
+  </div>
+  <div class="tx" id="tx"></div>
+  <div class="shadow" id="shadowCard">
+    <div class="phase"><span id="shPhase">Hör zu</span><span id="shCount" style="font-weight:600;color:var(--muted);font-size:14px"></span></div>
+    <div class="bar"><i id="shBar"></i></div>
+    <div class="opts">
+      <button class="chip" id="shGap">Pause ×1.2</button>
+      <button class="chip" id="shReps">Wiederholen 1×</button>
+      <button class="chip" id="shRec" aria-pressed="false">Mich aufnehmen</button>
+    </div>
+  </div>
+  <div class="dock">
+    <div class="scrub" id="scrub"><div class="rail"></div><div class="ticks" id="ticks"></div><div class="fill" id="fill"></div><div class="knob" id="knob"></div></div>
+    <div class="times"><span id="tCur">0:00</span><span id="tDur">0:00</span></div>
+    <div class="transport">
+      <button class="skip" id="b10" aria-label="10 Sekunden zurück"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 12a8 8 0 1 0 2.3-5.6"/><path d="M4 3v4h4"/></svg><small id="b10l">10</small></button>
+      <button class="skip" id="b5" aria-label="5 Sekunden zurück"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 12a8 8 0 1 0 2.3-5.6"/><path d="M4 3v4h4"/></svg><small id="b5l">5</small></button>
+      <button class="play" id="playBtn" aria-label="Abspielen"><svg id="icoPlay" width="30" height="30" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13a1 1 0 0 0 1.5.9l10.4-6.5a1 1 0 0 0 0-1.8L9.5 4.6A1 1 0 0 0 8 5.5z"/></svg><svg id="icoPause" hidden width="30" height="30" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4.2" height="14" rx="1.2"/><rect x="13.8" y="5" width="4.2" height="14" rx="1.2"/></svg></button>
+      <button class="skip" id="f5" aria-label="5 Sekunden vor"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 12a8 8 0 1 1-2.3-5.6"/><path d="M20 3v4h-4"/></svg><small id="f5l">5</small></button>
+      <button class="skip" id="f10" aria-label="10 Sekunden vor"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 12a8 8 0 1 1-2.3-5.6"/><path d="M20 3v4h-4"/></svg><small id="f10l">10</small></button>
+    </div>
+    <div class="tools">
+      <button class="tool" id="speedBtn">1.0×</button>
+      <button class="tool" id="modeBtn" aria-pressed="false">Shadowing</button>
+      <button class="tool" id="loopBtn" aria-pressed="false">Satz wiederholen</button>
+      <button class="tool" id="textBtn">Text: sichtbar</button>
+      <button class="tool" id="soundBtn">Klang</button>
+      <button class="tool" id="stBtn">Strukturen</button>
+    </div>
+  </div>
+  <audio id="audio" preload="auto" playsinline></audio>
+</div>
+
+<div class="scrim" id="scrim" hidden></div>
+<div class="sheet" id="sheet" hidden role="dialog" aria-modal="true"></div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+/* =========================================================
+   Hören-Trainer — single-file web app (iPhone / iPad / Mac)
+   Data stays on the device (IndexedDB). No server.
+   ========================================================= */
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt = t => { if(!isFinite(t)) t = 0; t = Math.max(0, t); const h = Math.floor(t/3600), m = Math.floor(t%3600/60), s = Math.floor(t%60); return (h? h+':'+String(m).padStart(2,'0') : m) + ':' + String(s).padStart(2,'0'); };
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+function toast(msg, ms=2600){ const t=$('#toast'); t.textContent=msg; t.hidden=false; clearTimeout(toast._t); toast._t=setTimeout(()=>t.hidden=true, ms); }
+
+/* ---------- settings ---------- */
+const DEF = {rate:1, enh:true, boost:1.4, textMode:'show', gap:1.2, reps:1, rec:false, method:'local', model:'onnx-community/whisper-small', gpu:false, key:'', useGloss:true, fix:true};
+let S = Object.assign({}, DEF);
+try { Object.assign(S, JSON.parse(localStorage.getItem('ht-settings')||'{}')); } catch(e){}
+const saveS = () => { try{ localStorage.setItem('ht-settings', JSON.stringify(S)); }catch(e){} };
+
+/* ---------- IndexedDB ---------- */
+const DB = {
+  db:null,
+  open(){ return new Promise((res,rej)=>{ const r = indexedDB.open('hoeren-trainer', 2);
+    r.onupgradeneeded = () => { const d=r.result; ['recs','audio','vocab','gloss'].forEach(n => { if(!d.objectStoreNames.contains(n)) d.createObjectStore(n,{keyPath:'id'}); }); };
+    r.onsuccess = () => { this.db = r.result; res(); }; r.onerror = () => rej(r.error); }); },
+  tx(store, mode, fn){ return new Promise((res,rej)=>{ const t=this.db.transaction(store,mode); const st=t.objectStore(store); const r=fn(st); t.oncomplete=()=>res(r && r.result); t.onerror=()=>rej(t.error); }); },
+  put(store,obj){ return this.tx(store,'readwrite',s=>s.put(obj)); },
+  get(store,key){ return this.tx(store,'readonly',s=>s.get(key)); },
+  all(store){ return this.tx(store,'readonly',s=>s.getAll()); },
+  del(store,key){ return this.tx(store,'readwrite',s=>s.delete(key)); }
+};
+
+/* ---------- state ---------- */
+const audio = $('#audio');
+let cur = null;          // current rec metadata
+let segs = [];           // [{s,e,t}]
+let curSeg = -1;
+let loopOn = false;
+let userScrollT = 0;
+
+/* =========================================================
+   LIBRARY
+   ========================================================= */
+async function renderLib(){
+  const recs = (await DB.all('recs')).sort((a,b)=>b.created-a.created);
+  const el = $('#recList');
+  if(!recs.length){
+    el.innerHTML = `<div class="empty">Noch keine Aufnahmen. Tippe auf <b>Aufnahme hinzufügen</b> und wähle eine Datei aus der App „Dateien“.<div class="fa" style="margin-top:10px">هنوز فایلی نیست. اول ویس را از Voice Memos با Share → Save to Files ذخیره کن، بعد اینجا اضافه‌اش کن. (راهنما بالا)</div></div>`;
+    return;
+  }
+  el.innerHTML = recs.map(r => {
+    let st = 'kein Transkript';
+    if(r.segments && r.segments.length){ st = (r.tDone && r.duration && r.tDone < r.duration - 1) ? `Transkript ${Math.round(r.tDone/r.duration*100)} %` : `Transkript ✓ (${r.segments.length} Sätze)`; }
+    if(cloudPending(r)) st = '☁︎ Transkript läuft im Hintergrund…'; else if(r.cloud && r.cloud.error && !(r.segments && r.segments.length)) st = '☁︎ Fehler – bitte neu starten';
+    return `<div class="rec" data-id="${r.id}">
+      <button class="name" data-act="open">${esc(r.name)}</button>
+      <div class="meta">${fmt(r.duration||0)} &nbsp;|&nbsp; ${st}${r.pos>5?' &nbsp;|&nbsp; bei '+fmt(r.pos):''}</div>
+      <div class="acts">
+        <button class="icon" data-act="rename" aria-label="Umbenennen"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16v4z"/></svg></button>
+        <button class="icon" data-act="delete" aria-label="Löschen"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 7h14M10 7V4h4v3M7 7l1 13h8l1-13"/></svg></button>
+      </div></div>`;
+  }).join('');
+}
+$('#recList').addEventListener('click', async e => {
+  const b = e.target.closest('[data-act]'); if(!b) return;
+  const id = b.closest('.rec').dataset.id; const r = await DB.get('recs', id);
+  if(b.dataset.act==='open') openRec(id);
+  if(b.dataset.act==='rename'){ const n = prompt('Neuer Name', r.name); if(n){ r.name=n.trim(); await DB.put('recs', r); renderLib(); } }
+  if(b.dataset.act==='delete'){ if(confirm(`„${r.name}“ löschen? Audio und Transkript werden entfernt.`)){ await DB.del('recs',id); await DB.del('audio',id); renderLib(); } }
+});
+
+$('#addBtn').onclick = () => $('#fileIn').click();
+$('#fileIn').onchange = async e => {
+  const files = [...e.target.files]; e.target.value = '';
+  for(const f of files){
+    try{
+      let dur = 0;
+      try{ dur = await probeDuration(f); }
+      catch(e1){ // second try: full decode (some players can't read metadata)
+        const AC = window.AudioContext||window.webkitAudioContext; const c = new AC();
+        try{ dur = (await c.decodeAudioData(await f.arrayBuffer())).duration; } finally { try{ c.close(); }catch(_){} }
+      }
+      const id = uid();
+      await DB.put('audio', {id, blob:f});
+      await DB.put('recs', {id, name:f.name.replace(/\.[^.]+$/,''), type:f.type, size:f.size, created:Date.now(), duration:dur, pos:0, segments:[], tDone:0});
+      toast(`„${f.name}“ hinzugefügt (${fmt(dur)})`);
+    }catch(err){ toast(`„${f.name}“ kann nicht gelesen werden: ${err.message}`, 5000); }
+  }
+  renderLib();
+};
+function probeDuration(blob){
+  return new Promise((res,rej)=>{
+    const a = new Audio(); const u = URL.createObjectURL(blob); let done=false;
+    const fin = (v,err) => { if(done) return; done=true; URL.revokeObjectURL(u); err? rej(err):res(v); };
+    a.preload='metadata'; a.onloadedmetadata = () => {
+      if(isFinite(a.duration) && a.duration>0) fin(a.duration);
+      else { a.currentTime = 1e7; a.ontimeupdate = () => { a.ontimeupdate=null; fin(a.duration||0); }; }
+    };
+    a.onerror = () => fin(0, new Error('Format wird nicht unterstützt'));
+    setTimeout(()=>fin(0), 8000);
+    a.src = u;
+  });
+}
+
+/* tabs */
+document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => {
+  document.querySelectorAll('.tabs button').forEach(x => x.setAttribute('aria-selected', x===b));
+  const tab = b.dataset.tab;
+  $('#recList').hidden = tab!=='recs'; $('#wordList').hidden = tab!=='words'; $('#glossList').hidden = tab!=='gloss'; $('#structList').hidden = tab!=='struct';
+  if(tab==='words') renderWords(); if(tab==='gloss') renderGlossTab(); if(tab==='struct') renderStructures($('#structList'));
+});
+
+/* =========================================================
+   WORD LIST (vocab)
+   ========================================================= */
+async function renderWords(){
+  const v = (await DB.all('vocab')).sort((a,b)=>b.added-a.added);
+  const el = $('#wordList');
+  if(!v.length){ el.innerHTML = `<div class="empty">Tippe im Transkript auf ein Wort und dann auf <b>In Wortliste</b>. Hier sammeln sich deine Wörter, mit Satz und Übersetzung.</div>`; return; }
+  el.innerHTML = `<div class="row" style="margin-bottom:12px"><button class="secondary" id="csvBtn">Als Excel-Datei (CSV) exportieren</button><span class="note">${v.length} Wörter</span></div>` +
+    v.map(w => `<div class="vocab" data-id="${w.id}"><div class="row" style="justify-content:space-between"><b>${esc(w.word)}</b>
+      <span><button class="icon" data-act="say" aria-label="Aussprechen">🔊</button><button class="icon" data-act="go" aria-label="Zur Stelle">▶︎</button><button class="icon" data-act="del" aria-label="Entfernen">✕</button></span></div>
+      ${w.lemma && w.lemma.toLowerCase()!==w.word.toLowerCase()?`<div class="lemma">Grundform: ${esc(w.lemma)}</div>`:''}
+      <div class="fa">${esc(w.fa||'')}</div><div class="en">${esc(w.en||'')}</div>
+      <div class="ctx">„${esc(w.sentence||'')}“ <span class="note">— ${esc(w.recName||'')} ${fmt(w.time||0)}</span></div></div>`).join('');
+  $('#csvBtn').onclick = () => {
+    const q = s => '"' + String(s??'').replace(/"/g,'""') + '"';
+    const rows = [['Deutsch','Grundform','Persisch','Englisch','Satz','Aufnahme','Zeit']].concat(v.map(w=>[w.word,w.lemma,w.fa,w.en,w.sentence,w.recName,fmt(w.time)]));
+    download('Wortliste.csv', '\ufeff' + rows.map(r=>r.map(q).join(';')).join('\r\n'), 'text/csv;charset=utf-8');
+  };
+}
+$('#wordList').addEventListener('click', async e => {
+  const b = e.target.closest('[data-act]'); if(!b) return;
+  const id = b.closest('.vocab').dataset.id; const w = await DB.get('vocab', id);
+  if(b.dataset.act==='say') say(w.word);
+  if(b.dataset.act==='del'){ await DB.del('vocab', id); renderWords(); }
+  if(b.dataset.act==='go' && w.recId){ await openRec(w.recId); audio.currentTime = Math.max(0,(w.time||0)-1); }
+});
+function download(name, data, type){
+  const blob = data instanceof Blob ? data : new Blob([data], {type});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 4000);
+}
+
+/* =========================================================
+   PLAYER
+   ========================================================= */
+async function openRec(id){
+  const r = await DB.get('recs', id); const a = await DB.get('audio', id);
+  if(!r || !a){ toast('Aufnahme nicht gefunden'); return; }
+  if(!r.whisperSegs && r.whisper) r.whisperSegs = r.whisper;
+  cur = r; segs = r.segments || [];
+  if(audio.src) URL.revokeObjectURL(audio.src);
+  audio.src = URL.createObjectURL(a.blob);
+  audio.load();
+  $('#pTitle').textContent = r.name;
+  $('#lib').hidden = true; $('#player').hidden = false;
+  curSeg = -1; loopOn = false; $('#loopBtn').setAttribute('aria-pressed', false);
+  setMode(false);
+  renderTx(); applySettings();
+  if(r.needsAlign && r.userText && r.whisperSegs) setTimeout(autoAlign, 600); else if(cloudPending(r)) setTimeout(() => cloudPoll(false), 300);
+  audio.addEventListener('loadedmetadata', function once(){ audio.removeEventListener('loadedmetadata', once);
+    if(r.pos>2 && r.pos < (audio.duration||1e9)-2) audio.currentTime = r.pos;
+    if(isFinite(audio.duration) && Math.abs((r.duration||0)-audio.duration)>1){ r.duration = audio.duration; DB.put('recs', r); }
+    drawTicks(); updateTime();
+  });
+  setupMediaSession();
+}
+$('#backBtn').onclick = async () => {
+  stopShadow(); audio.pause(); await savePos();
+  $('#player').hidden = true; $('#lib').hidden = false; renderLib();
+};
+async function savePos(){ if(!cur) return; const r = await DB.get('recs', cur.id); if(!r) return; r.pos = audio.currentTime||0; cur.pos = r.pos; await DB.put('recs', r); }
+setInterval(()=>{ if(cur && !audio.paused) savePos(); }, 5000);
+document.addEventListener('visibilitychange', ()=>{ if(document.hidden) savePos(); });
+
+/* ---------- transcript render ---------- */
+function splitWords(t){ return t.split(/(\s+)/); }
+function renderTx(){
+  const tx = $('#tx'); curSeg = -1; tick._el = null; tick._w = -1;
+  tx.className = 'tx m-' + S.textMode;
+  if(!segs.length && cloudPending(cur)){
+    tx.innerHTML = `<div class="notx"><h3>☁︎ Wird im Hintergrund transkribiert</h3><p>Hochgeladen vor ${minsAgo(cur.cloud.sent)} Min., ${cloudEta(cur.cloud)}. Du kannst die App schließen – das Transkript erscheint automatisch.</p><button class="primary" id="ckNow" style="max-width:320px;margin:16px auto 0">Jetzt prüfen</button><p class="fa" style="margin-top:14px">می‌توانی اپ را ببندی؛ وقتی آماده شد خودش اینجا می‌آید.</p></div>`;
+    $('#ckNow').onclick = () => cloudPoll(true); drawTicks(); return;
+  }
+  if(!segs.length){
+    tx.innerHTML = `<div class="notx"><h3>Noch kein Transkript</h3><p>Du kannst schon hören, Tempo ändern und springen. Für Text, Wort-Übersetzung und Shadowing erstelle ein Transkript.</p><button class="primary" id="mkTx" style="max-width:320px;margin:16px auto 0">Transkript erstellen</button><p class="fa" style="margin-top:14px">برای متن، معنی لغت و Shadowing اول ترنسکریپت بساز.</p></div>`;
+    $('#mkTx').onclick = openTxSheet; drawTicks(); return;
+  }
+  tx.innerHTML = segs.map((g,i) => {
+    let wi = 0;
+    const words = splitWords(g.t).map(p => /^\s+$/.test(p)||!p ? p : `<span class="w${glossLookup(p)?' fw':''}" data-w="${wi++}">${esc(p)}</span>`).join('');
+    const alt = g.alt && g.alt !== g.t ? `<div class="alt"><button class="use" data-use="${i}">übernehmen</button><span class="altl">${esc(g.al||g.altSrc||'Sprachmemos')}</span>${splitWords(g.alt).map(p => /^\s+$/.test(p)||!p ? p : `<span class="w">${esc(p)}</span>`).join('')}</div>` : '';
+    return `<div class="seg" data-i="${i}"><button class="ts" data-t="${g.s}">${fmt(g.s)}</button><span class="txt">${words}</span>${alt}</div>`;
+  }).join('');
+  drawTicks();
+}
+function wordTime(i, k){
+  const g = segs[i]; if(g.wt && g.wt[k] != null) return g.wt[k];
+  const ws = splitWords(g.t).filter(p => p && !/^\s+$/.test(p)), lens = ws.map(x => x.length + 1), tot = lens.reduce((a, b) => a + b, 0) || 1;
+  let acc = 0; for(let j = 0; j < k && j < lens.length; j++) acc += lens[j];
+  return g.s + (g.e - g.s) * acc / tot;
+}
+let bubT = null;
+function showWordBubble(el, i, k){
+  let b = $('#wbub'); if(!b){ b = document.createElement('button'); b.id = 'wbub'; b.className = 'wbub'; document.body.appendChild(b); }
+  const r = el.getBoundingClientRect();
+  b._t = Date.now(); b._top = $('#tx').scrollTop;
+  b.textContent = 'Bedeutung ›'; b.style.left = Math.min(innerWidth - 70, Math.max(70, r.left + r.width / 2)) + 'px'; b.style.top = Math.max(64, r.top) + 'px'; b.hidden = false;
+  b.onclick = ev => { ev.stopPropagation(); b.hidden = true; openWord(el.textContent, i, k); };
+  clearTimeout(bubT); bubT = setTimeout(() => { b.hidden = true; }, 4000);
+}
+function drawTicks(){
+  const d = audio.duration || cur?.duration || 0; const el = $('#ticks');
+  if(!d || !segs.length){ el.innerHTML=''; return; }
+  const step = Math.max(1, Math.ceil(segs.length/120));
+  el.innerHTML = segs.filter((_,i)=>i%step===0).map(g=>`<i style="left:${(g.s/d*100).toFixed(2)}%"></i>`).join('');
+}
+$('#tx').addEventListener('scroll', ()=>{ userScrollT = Date.now(); const b = $('#wbub'); if(b && !b.hidden && Date.now() - (b._t||0) > 400 && Math.abs($('#tx').scrollTop - (b._top||0)) > 24) b.hidden = true; }, {passive:true});
+$('#tx').addEventListener('touchmove', ()=>{ userScrollT = Date.now(); }, {passive:true});
+$('#tx').addEventListener('click', e => {
+  const segEl = e.target.closest('.seg'); if(!segEl) return;
+  const i = +segEl.dataset.i;
+  const use = e.target.closest('.use');
+  if(use){ segs[i].t = segs[i].alt; delete segs[i].wt; persistSegs().then(renderTx); toast('Satz aus Sprachmemos übernommen.'); return; }
+  if(e.target.closest('.ts')){ if(loopOn) curSeg = -1; seekTo(segs[i].s); if(shadow.on) startShadowAt(i); else play(); return; }
+  if(S.textMode!=='show' && !segEl.classList.contains('rev')){ segEl.classList.add('rev'); return; }
+  const w = e.target.closest('.w'); if(!w) return;
+  if(w.closest('.alt') || w.dataset.w == null){ openWord(w.textContent, i, NaN); return; }
+  const k = +w.dataset.w; userScrollT = Date.now();
+  if(shadow.on) startShadowAt(i); else { if(loopOn) curSeg = -1; seekTo(Math.max(0, wordTime(i, k) - 0.12)); play(); }
+  showWordBubble(w, i, k);
+});
+
+/* ---------- audio graph: speed + clarity ---------- */
+let ctx=null, nodes=null;
+function ensureGraph(){
+  if(ctx) return;
+  try{
+    if(navigator.audioSession) navigator.audioSession.type = 'playback'; // plays even with the silent switch on (iOS 17+)
+    const AC = window.AudioContext || window.webkitAudioContext; ctx = new AC();
+    const src = ctx.createMediaElementSource(audio);
+    const hp = ctx.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=95; hp.Q.value=0.7;
+    const mud = ctx.createBiquadFilter(); mud.type='peaking'; mud.frequency.value=280; mud.Q.value=1.0; mud.gain.value=-3;
+    const pres = ctx.createBiquadFilter(); pres.type='peaking'; pres.frequency.value=2900; pres.Q.value=0.9; pres.gain.value=6;
+    const lp = ctx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=9500; lp.Q.value=0.7;
+    const comp = ctx.createDynamicsCompressor(); comp.threshold.value=-32; comp.knee.value=12; comp.ratio.value=4; comp.attack.value=0.004; comp.release.value=0.2;
+    const makeup = ctx.createGain(); makeup.gain.value = 1.8;
+    const boost = ctx.createGain();
+    nodes = {src,hp,mud,pres,lp,comp,makeup,boost};
+    wireGraph();
+  }catch(err){ ctx=null; nodes=null; console.warn('graph', err); }
+}
+function wireGraph(){
+  if(!nodes) return; const n = nodes;
+  Object.values(n).forEach(x=>{ try{x.disconnect()}catch(e){} });
+  if(S.enh){ n.src.connect(n.hp); n.hp.connect(n.mud); n.mud.connect(n.pres); n.pres.connect(n.lp); n.lp.connect(n.comp); n.comp.connect(n.makeup); n.makeup.connect(n.boost); }
+  else n.src.connect(n.boost);
+  n.boost.gain.value = S.boost; n.boost.connect(ctx.destination);
+}
+function applySettings(){
+  audio.preservesPitch = true; audio.webkitPreservesPitch = true; audio.mozPreservesPitch = true;
+  audio.defaultPlaybackRate = S.rate; audio.playbackRate = S.rate;
+  $('#speedBtn').textContent = (Math.round(S.rate*100)/100).toFixed(2).replace(/0$/,'') + '×';
+  $('#textBtn').textContent = 'Text: ' + ({show:'sichtbar', hide:'verborgen', after:'nach dem Hören'}[S.textMode]);
+  $('#tx').className = 'tx m-' + S.textMode;
+  $('#soundBtn').textContent = S.enh ? 'Klang: klar' : 'Klang: original';
+  $('#soundBtn').setAttribute('aria-pressed', S.enh);
+  $('#shGap').textContent = 'Pause ×' + S.gap.toFixed(1);
+  $('#shReps').textContent = 'Wiederholen ' + S.reps + '×';
+  $('#shRec').setAttribute('aria-pressed', S.rec);
+  wireGraph();
+}
+audio.addEventListener('play', ()=>{ audio.playbackRate = S.rate; setPlayIcon(true); });
+audio.addEventListener('pause', ()=>setPlayIcon(false));
+audio.addEventListener('ended', ()=>setPlayIcon(false));
+function setPlayIcon(p){ $('#icoPlay').hidden = p; $('#icoPause').hidden = !p; $('#playBtn').setAttribute('aria-label', p?'Pause':'Abspielen'); }
+async function play(){
+  ensureGraph();
+  try{ if(ctx && ctx.state!=='running') await ctx.resume(); }catch(e){}
+  try{ await audio.play(); }catch(err){ toast('Wiedergabe nicht möglich: '+err.message); }
+}
+function seekTo(t){ const d = audio.duration||0; audio.currentTime = Math.max(0, Math.min(d? d-0.05 : t, t)); updateTime(); }
+
+$('#playBtn').onclick = () => {
+  if(shadow.on){ shadow.paused ? resumeShadow() : pauseShadow(); return; }
+  audio.paused ? play() : audio.pause();
+};
+function nudge(sec){
+  if(shadow.on){ const i = Math.max(0, Math.min(segs.length-1, shadow.i + (sec>0?1:-1))); startShadowAt(i); return; }
+  seekTo(audio.currentTime + sec);
+}
+$('#b10').onclick = () => nudge(-10); $('#b5').onclick = () => { if(shadow.on) startShadowAt(shadow.i); else nudge(-5); };
+$('#f5').onclick = () => nudge(5);    $('#f10').onclick = () => nudge(10);
+
+/* scrubber */
+(function(){
+  const sc = $('#scrub'); let drag=false;
+  const at = e => { const r = sc.getBoundingClientRect(); const x = (e.touches? e.touches[0].clientX : e.clientX) - r.left; return Math.max(0, Math.min(1, x/r.width)) * (audio.duration||0); };
+  const down = e => { drag=true; seekTo(at(e)); e.preventDefault(); };
+  const move = e => { if(drag){ seekTo(at(e)); e.preventDefault(); } };
+  const up = () => { if(drag){ drag=false; if(shadow.on){ const i = segAt(audio.currentTime); if(i>=0) startShadowAt(i); } } };
+  sc.addEventListener('pointerdown', down); window.addEventListener('pointermove', move); window.addEventListener('pointerup', up);
+})();
+
+/* speed / text / sound / loop */
+$('#speedBtn').onclick = () => openSheet(`
+  <h3>Tempo</h3>
+  <div style="font-size:40px;font-family:var(--serif);font-weight:700;text-align:center" id="rv">${S.rate.toFixed(2)}×</div>
+  <input type="range" id="rr" min="0.5" max="1.5" step="0.05" value="${S.rate}">
+  <div class="row" style="justify-content:space-between;margin-top:10px">${[0.6,0.75,0.85,1,1.25].map(v=>`<button class="chip" data-r="${v}">${v}×</button>`).join('')}</div>
+  <p class="note">Die Tonhöhe bleibt gleich, nur die Geschwindigkeit ändert sich. Tipp: erst 0.75× mit Text, dann 1.0× ohne Text.</p>`, sh => {
+  const set = v => { S.rate = +v; saveS(); applySettings(); sh.querySelector('#rv').textContent = S.rate.toFixed(2)+'×'; sh.querySelector('#rr').value = S.rate; };
+  sh.querySelector('#rr').oninput = e => set(e.target.value);
+  sh.querySelectorAll('[data-r]').forEach(b => b.onclick = () => set(b.dataset.r));
+});
+$('#textBtn').onclick = () => { const order=['show','after','hide']; S.textMode = order[(order.indexOf(S.textMode)+1)%3]; saveS(); document.querySelectorAll('.seg.rev').forEach(x=>x.classList.remove('rev')); applySettings(); };
+$('#soundBtn').onclick = () => openSheet(`
+  <h3>Klang</h3>
+  <label class="opt"><input type="checkbox" id="enh" ${S.enh?'checked':''}><span><b>Sprache klarer machen</b><small>Filtert Brummen und Rauschen, hebt Stimmen hervor, gleicht leise und laute Sprecher aus.</small></span></label>
+  <h4>Lautstärke-Boost</h4>
+  <input type="range" id="bst" min="1" max="3" step="0.1" value="${S.boost}">
+  <div class="note" id="bstv">×${S.boost.toFixed(1)}</div>
+  <p class="note">Kein Ton? Prüfe den Stummschalter am iPhone und die Lautstärke. Bei Verzerrung Boost reduzieren.</p>`, sh => {
+  ensureGraph();
+  sh.querySelector('#enh').onchange = e => { S.enh = e.target.checked; saveS(); applySettings(); };
+  sh.querySelector('#bst').oninput = e => { S.boost = +e.target.value; saveS(); sh.querySelector('#bstv').textContent='×'+S.boost.toFixed(1); applySettings(); };
+});
+$('#loopBtn').onclick = () => {
+  if(!segs.length){ toast('Für die Satz-Schleife brauchst du ein Transkript.'); return; }
+  loopOn = !loopOn; $('#loopBtn').setAttribute('aria-pressed', loopOn);
+  if(loopOn){ curSeg = segAt(audio.currentTime); toast('Der aktuelle Satz wird wiederholt.'); }
+};
+
+/* ---------- time loop ---------- */
+function segAt(t){ let lo=0, hi=segs.length-1, ans=-1; while(lo<=hi){ const m=(lo+hi)>>1; if(segs[m].s <= t+0.05){ ans=m; lo=m+1; } else hi=m-1; } return ans; }
+function updateTime(){
+  const d = audio.duration||0, t = audio.currentTime||0, p = d? t/d*100 : 0;
+  $('#fill').style.width = p+'%'; $('#knob').style.left = p+'%';
+  $('#tCur').textContent = fmt(t); $('#tDur').textContent = fmt(d);
+}
+function tick(){
+  requestAnimationFrame(tick);
+  if($('#player').hidden) return;
+  updateTime();
+  if(!segs.length) return;
+  const t = audio.currentTime;
+  if(loopOn && !shadow.on && curSeg>=0 && t >= segs[curSeg].e - 0.03 && !audio.paused){ audio.currentTime = segs[curSeg].s; return; }
+  if(shadow.on) shadowTick(t);
+  let i = loopOn && curSeg>=0 ? curSeg : segAt(t);
+  if(shadow.on) i = shadow.i;
+  if(i !== curSeg || !tick._el){
+    const prev = document.querySelector('.seg.cur'); if(prev){ prev.classList.remove('cur'); if(S.textMode==='after' && !audio.paused) prev.classList.add('rev'); }
+    curSeg = i; tick._el = i>=0 ? document.querySelector(`.seg[data-i="${i}"]`) : null;
+    if(tick._el){ tick._el.classList.add('cur'); if(Date.now()-userScrollT > 3500) tick._el.scrollIntoView({block:'center', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'}); }
+  }
+  // approximate current word
+  const el = tick._el; if(!el || i<0) return;
+  const g = segs[i]; const ws = el.querySelectorAll('.txt .w'); if(!ws.length) return;
+  let k = -1;
+  if(t >= g.s && t <= g.e && g.wt && g.wt.length === ws.length){ k = 0; for(let j=0;j<g.wt.length;j++){ if(g.wt[j] <= t) k = j; else break; } }
+  else if(t >= g.s && t <= g.e){
+    const lens = [...ws].map(w=>w.textContent.length+1); const tot = lens.reduce((a,b)=>a+b,0);
+    let target = (t-g.s)/Math.max(0.1,g.e-g.s)*tot, acc=0; k = ws.length-1;
+    for(let j=0;j<lens.length;j++){ acc+=lens[j]; if(acc>=target){ k=j; break; } }
+  }
+  if(k !== tick._w || el !== tick._wel){ const o = document.querySelector('.w.now'); if(o) o.classList.remove('now'); if(k>=0) ws[k].classList.add('now'); tick._w = k; tick._wel = el; }
+}
+requestAnimationFrame(tick);
+
+/* =========================================================
+   SHADOWING
+   ========================================================= */
+const shadow = {on:false, i:0, rep:0, phase:'idle', paused:false, timer:null, gapStart:0, gapLen:0, raf:null, mic:null, rec:null, chunks:[], own:null};
+$('#modeBtn').onclick = () => {
+  if(!segs.length){ toast('Shadowing braucht ein Transkript. Erstelle es zuerst.'); openTxSheet(); return; }
+  setMode(!shadow.on);
+  if(shadow.on){ const i = Math.max(0, segAt(audio.currentTime)); startShadowAt(i); }
+};
+function setMode(on){
+  if(!on) stopShadow();
+  shadow.on = on; $('#modeBtn').setAttribute('aria-pressed', on);
+  $('#shadowCard').classList.toggle('on', on);
+  $('#b10l').textContent = on ? '◂◂' : '10'; $('#b5l').textContent = on ? '↺' : '5';
+  $('#f5l').textContent = on ? '▸▸' : '5';  $('#f10l').textContent = on ? '▸▸' : '10';
+  $('#b10').setAttribute('aria-label', on? 'Vorheriger Satz':'10 Sekunden zurück');
+  $('#b5').setAttribute('aria-label', on? 'Satz nochmal':'5 Sekunden zurück');
+  $('#f5').setAttribute('aria-label', on? 'Nächster Satz':'5 Sekunden vor');
+  $('#f10').setAttribute('aria-label', on? 'Nächster Satz':'10 Sekunden vor');
+}
+function clearShadowTimers(){ clearTimeout(shadow.timer); cancelAnimationFrame(shadow.raf); if(shadow.own){ shadow.own.pause(); shadow.own=null; } }
+function stopShadow(){ clearShadowTimers(); stopRecording(true); shadow.phase='idle'; shadow.paused=false; audio.pause(); }
+function startShadowAt(i){
+  clearShadowTimers(); stopRecording(true);
+  shadow.i = i; shadow.rep = 0; shadow.paused = false; playShadowSeg();
+}
+function playShadowSeg(){
+  const g = segs[shadow.i]; if(!g){ stopShadow(); setShPhase('Fertig! Alle Sätze geschafft.', ''); return; }
+  shadow.phase = 'play'; $('#shadowCard').classList.remove('gap');
+  setShPhase('Hör zu', `Satz ${shadow.i+1} / ${segs.length}` + (S.reps>1?`  (${shadow.rep+1}/${S.reps})`:''));
+  audio.currentTime = g.s; play();
+}
+function shadowTick(t){
+  if(shadow.phase!=='play' || shadow.paused) return;
+  const g = segs[shadow.i];
+  $('#shBar').style.width = Math.min(100, Math.max(0,(t-g.s)/Math.max(.1,g.e-g.s)*100)) + '%';
+  if(t >= g.e - 0.02){ audio.pause(); enterGap(); }
+}
+async function enterGap(){
+  const g = segs[shadow.i];
+  shadow.phase = 'gap'; $('#shadowCard').classList.add('gap');
+  shadow.gapLen = ((g.e-g.s)/S.rate)*S.gap + 0.5; shadow.gapStart = performance.now();
+  setShPhase('<span class="you">Jetzt du! Sprich nach.</span>', `Satz ${shadow.i+1} / ${segs.length}`);
+  if(S.rec) await startRecording();
+  const anim = () => { const p = (performance.now()-shadow.gapStart)/(shadow.gapLen*1000); $('#shBar').style.width = Math.min(100,p*100)+'%'; if(p<1) shadow.raf = requestAnimationFrame(anim); };
+  anim();
+  shadow.timer = setTimeout(endGap, shadow.gapLen*1000);
+}
+async function endGap(){
+  cancelAnimationFrame(shadow.raf);
+  if(S.rec && shadow.rec){
+    const blob = await stopRecording();
+    if(blob && blob.size > 500){
+      shadow.phase = 'own'; setShPhase('Deine Stimme', `Satz ${shadow.i+1} / ${segs.length}`);
+      shadow.own = new Audio(URL.createObjectURL(blob)); shadow.own.playsInline = true;
+      shadow.own.onended = () => { shadow.own=null; nextShadow(); };
+      try{ await shadow.own.play(); return; }catch(e){}
+    }
+  }
+  nextShadow();
+}
+function nextShadow(){
+  if(!shadow.on || shadow.paused) return;
+  shadow.rep++;
+  if(shadow.rep >= S.reps){ shadow.rep = 0; shadow.i++; }
+  playShadowSeg();
+}
+function pauseShadow(){ shadow.paused = true; clearShadowTimers(); stopRecording(true); audio.pause(); setShPhase('Pausiert', `Satz ${shadow.i+1} / ${segs.length}`); setPlayIcon(false); }
+function resumeShadow(){ shadow.paused = false; playShadowSeg(); }
+function setShPhase(a,b){ $('#shPhase').innerHTML = a; $('#shCount').textContent = b; }
+$('#shGap').onclick = () => { const o=[0.8,1.0,1.2,1.5,2.0]; S.gap = o[(o.indexOf(S.gap)+1)%o.length] ?? 1.2; saveS(); applySettings(); };
+$('#shReps').onclick = () => { S.reps = S.reps>=3 ? 1 : S.reps+1; saveS(); applySettings(); };
+$('#shRec').onclick = async () => {
+  S.rec = !S.rec;
+  if(S.rec){ try{ await getMic(); toast('Nach jedem Satz wirst du aufgenommen und hörst dich selbst.'); }catch(e){ S.rec=false; toast('Kein Mikrofon-Zugriff. Erlaube es in Safari: aA → Website-Einstellungen → Mikrofon.', 5000); } }
+  saveS(); applySettings();
+};
+async function getMic(){ if(shadow.mic) return shadow.mic; shadow.mic = await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true, noiseSuppression:true}}); return shadow.mic; }
+async function startRecording(){
+  try{
+    const mic = await getMic(); if(!window.MediaRecorder) return;
+    shadow.chunks = []; shadow.rec = new MediaRecorder(mic);
+    shadow.rec.ondataavailable = e => { if(e.data && e.data.size) shadow.chunks.push(e.data); };
+    shadow.rec.start();
+  }catch(e){ shadow.rec = null; }
+}
+function stopRecording(discard){
+  return new Promise(res => {
+    const r = shadow.rec; shadow.rec = null;
+    if(!r || r.state==='inactive'){ res(null); return; }
+    r.onstop = () => res(discard? null : new Blob(shadow.chunks, {type: r.mimeType || 'audio/mp4'}));
+    try{ r.stop(); }catch(e){ res(null); }
+  });
+}
+
+/* =========================================================
+   WORD LOOKUP
+   ========================================================= */
+const clean = w => w.replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, '');
+async function gtx(q, tl){
+  const u = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=de&tl=${tl}&dt=t&dt=bd&q=${encodeURIComponent(q)}`;
+  const r = await fetch(u); if(!r.ok) throw new Error(r.status);
+  const j = await r.json();
+  const text = (j[0]||[]).map(x=>x[0]).join('');
+  const dict = (j[1]||[]).map(d => ({pos:d[0], terms:(d[1]||[]).slice(0,6), lemma:d[3]}));
+  return {text, dict};
+}
+async function mymemory(q, tl){
+  const r = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(q)}&langpair=de|${tl}`);
+  const j = await r.json(); return {text: j.responseData?.translatedText || '', dict:[]};
+}
+async function translate(q, tl){ try{ return await gtx(q, tl); }catch(e){ try{ return await mymemory(q, tl); }catch(e2){ return null; } } }
+function say(text, rate=0.85){
+  if(!window.speechSynthesis) return; speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text); u.lang='de-DE'; u.rate=rate;
+  const v = speechSynthesis.getVoices().find(v=>v.lang && v.lang.startsWith('de')); if(v) u.voice=v;
+  speechSynthesis.speak(u);
+}
+function openWord(raw, segI, wIdx){
+  const word = clean(raw); if(!word) return;
+  const wasPlaying = !audio.paused && !shadow.on;
+  if(wasPlaying) audio.pause();
+  if(shadow.on && !shadow.paused) pauseShadow();
+  const g = segs[segI];
+  const L = encodeURIComponent(word);
+  const sh = openSheet(`
+    <div class="row" style="justify-content:space-between;align-items:center">
+      <p class="word">${esc(word)}</p>
+      <div class="row"><button class="icon" id="wSay" aria-label="Aussprechen" style="font-size:22px">🔊</button></div>
+    </div>
+    <div class="lemma" id="wLemma"></div>
+    ${glossLookup(word) ? `<div class="tag" style="display:inline-block;margin-top:6px;font-size:13px;padding:3px 8px">Fachwort: <span dir="auto">${esc(glossLookup(word).fa || glossLookup(word).term)}</span></div>` : ''}
+    <div class="tr"><div class="fa" id="wFa">…</div><div class="en" id="wEn">…</div><div class="dict" id="wDict"></div></div>
+    <div class="row"><button class="primary" id="wSave" style="flex:1">In Wortliste speichern</button><button class="secondary" id="wGloss">${glossLookup(word) ? 'Fachwort ✓' : 'Als Fachwort'}</button></div>
+    <h4>Im Satz (${fmt(g.s)})</h4>
+    <div class="ctxs">${esc(g.t)}</div>
+    <div class="fa" id="sFa" style="font-size:16px;margin-bottom:10px"></div>
+    <div class="row">
+      <button class="secondary" id="sTr">Satz übersetzen</button>
+      <button class="secondary" id="sPlay">Satz anhören</button>
+      <button class="secondary" id="sEdit">Satz korrigieren</button>
+    </div>
+    <h4>Wörterbücher</h4>
+    <div class="links">
+      <a href="https://glosbe.com/de/fa/${L}" target="_blank" rel="noopener noreferrer">Glosbe DE→FA</a>
+      <a href="https://www.dict.cc/?s=${L}" target="_blank" rel="noopener noreferrer">dict.cc</a>
+      <a href="https://de.wiktionary.org/wiki/${L}" target="_blank" rel="noopener noreferrer">Wiktionary</a>
+      <a href="https://www.duden.de/suchen/dudenonline/${L}" target="_blank" rel="noopener noreferrer">Duden</a>
+      <a href="https://translate.google.com/?sl=de&tl=fa&text=${L}" target="_blank" rel="noopener noreferrer">Google Übersetzer</a>
+    </div>`, () => {}, () => { if(wasPlaying) play(); });
+  let data = {word, lemma:'', fa:'', en:''};
+  sh.querySelector('#wSay').onclick = () => say(word);
+  (async () => {
+    const [fa, en] = await Promise.all([translate(word,'fa'), translate(word,'en')]);
+    if(!fa && !en){ sh.querySelector('#wFa').textContent = ''; sh.querySelector('#wEn').textContent = 'Keine Verbindung zur Übersetzung. Nutze die Wörterbuch-Links unten oder markiere das Wort lange → „Übersetzen“ (iOS).'; return; }
+    data.fa = fa?.text||''; data.en = en?.text||'';
+    const lem = (en?.dict||[]).map(d=>d.lemma).find(Boolean) || (fa?.dict||[]).map(d=>d.lemma).find(Boolean) || '';
+    data.lemma = lem;
+    sh.querySelector('#wFa').textContent = data.fa;
+    sh.querySelector('#wEn').textContent = data.en;
+    if(lem && lem.toLowerCase()!==word.toLowerCase()) sh.querySelector('#wLemma').textContent = 'Grundform: ' + lem;
+    const dl = [];
+    (fa?.dict||[]).forEach(d => dl.push(`<div class="fa">${esc(d.terms.join('، '))} <span class="note">(${esc(d.pos)})</span></div>`));
+    (en?.dict||[]).forEach(d => dl.push(`<div class="note">${esc(d.pos)}: ${esc(d.terms.join(', '))}</div>`));
+    sh.querySelector('#wDict').innerHTML = dl.join('');
+  })();
+  sh.querySelector('#wSave').onclick = async () => {
+    await DB.put('vocab', {id:uid(), word, lemma:data.lemma, fa:data.fa, en:data.en, sentence:g.t, recId:cur?.id, recName:cur?.name, time:g.s, added:Date.now()});
+    const b = sh.querySelector('#wSave'); b.textContent = 'Gespeichert ✓'; b.disabled = true;
+  };
+  sh.querySelector('#wGloss').onclick = async () => {
+    const term = data.lemma && data.lemma.length > 2 && /^\p{Lu}/u.test(word) === /^\p{Lu}/u.test(data.lemma) ? data.lemma : word.replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu,'');
+    const ex = GL.find(e => e.k === normW(term) && e.type !== 'R');
+    await DB.put('gloss', {id: ex ? ex.id : 'u-'+uid(), term: ex ? ex.term : term, fa: data.fa || (ex && ex.fa) || '', type: ex ? ex.type : (/^\p{Lu}/u.test(term) ? 'N' : 'V'), prio: ex ? !!ex.prio : false, custom:true, added:Date.now()});
+    await loadGloss(); sh.querySelector('#wGloss').textContent = 'Fachwort ✓'; renderTx(); toast(`„${term}“ ist jetzt ein Fachwort.`);
+  };
+  sh.querySelector('#sTr').onclick = async () => { sh.querySelector('#sFa').textContent='…'; const r = await translate(g.t,'fa'); sh.querySelector('#sFa').textContent = r?.text || 'Übersetzung nicht verfügbar.'; };
+  sh.querySelector('#sPlay').onclick = async () => {
+    audio.currentTime = g.s; await play();
+    const stopAt = () => { if(audio.currentTime >= g.e){ audio.pause(); audio.removeEventListener('timeupdate', stopAt); } };
+    audio.addEventListener('timeupdate', stopAt);
+  };
+  sh.querySelector('#sEdit').onclick = async () => {
+    const n = prompt('Satz korrigieren (was du wirklich hörst):', g.t);
+    if(n!=null && n.trim()){
+      const learned = learnRules(g.t, n.trim());
+      for(const [a, b] of learned) await DB.put('gloss', {id:'r-'+uid(), term:b, from:a, fa:'', type:'R', prio:false, custom:true, added:Date.now()});
+      if(learned.length){ await loadGloss(); setTimeout(() => toast('Gelernt: ' + learned.map(([a,b]) => `„${a}“ → „${b}“`).join(', '), 4000), 300); }
+      g.t = n.trim(); delete g.wt; await persistSegs(); renderTx(); closeSheet(); toast('Satz gespeichert.'); }
+  };
+}
+async function persistSegs(extra){ const r = await DB.get('recs', cur.id); r.segments = segs; Object.assign(r, extra||{}); await DB.put('recs', r); Object.assign(cur, r); }
+
+/* =========================================================
+   SHEETS
+   ========================================================= */
+let onSheetClose = null;
+function openSheet(html, init, onClose){
+  const sh = $('#sheet'); sh.innerHTML = '<div class="grab"></div>' + html; sh.hidden = false; $('#scrim').hidden = false; sh.scrollTop = 0;
+  onSheetClose = onClose || null; if(init) init(sh); return sh;
+}
+function closeSheet(){ $('#sheet').hidden = true; $('#scrim').hidden = true; const f = onSheetClose; onSheetClose = null; if(f) f(); }
+$('#scrim').onclick = () => { if(!TX.busy) closeSheet(); else toast('Transkription läuft. Zum Abbrechen „Stopp“ drücken.'); };
+
+$('#helpBtn').onclick = () => openSheet(`
+  <h3 class="fa">راهنما</h3>
+  <div class="fa help">
+  <b>۱) آوردن ویس از Voice Memos</b>
+  <ol><li>در Voice Memos روی ضبط بزن ← سه نقطه (…) ← <b>Share</b> ← <b>Save to Files</b> ← یک پوشه (مثلاً «Meetings») انتخاب کن.</li>
+  <li>اینجا «Aufnahme hinzufügen» را بزن و فایل را از Files انتخاب کن. می‌توانی چند فایل با هم انتخاب کنی.</li></ol>
+  <b>۲) ترنسکریپت</b>
+  <ol><li>فایل را باز کن ← «Transkript erstellen».</li>
+  <li>«Auf dem Gerät» رایگان است و صدایت از گوشی خارج نمی‌شود. بار اول مدل (حدود ۲۵۰ مگ برای Genau) دانلود می‌شود؛ با وای‌فای انجام بده.</li>
+  <li>در طول کار صفحه را باز نگه دار. اگر قطع شد، دوباره Start بزن؛ از همان‌جا ادامه می‌دهد.</li>
+  <li>اشتباهی دیدی؟ روی کلمه‌ای از آن جمله بزن ← «Satz korrigieren».</li></ol>
+  <b>متن خودت را هم‌زمان کن</b>
+  <ol><li>ترنسکریپت خودت (Sprachmemos، Teams …) را کپی کن ← «Transkript» (آیکون بالا راست) ← «Eigenes Transkript abgleichen».</li>
+  <li>اگر قبلاً ترنسکریپت Whisper ساخته‌ای: فوری. وگرنه «Schnell und genau»: Whisper فقط تکه‌های کوتاه را گوش می‌دهد و متن تو را کلمه‌به‌کلمه روی صدا می‌نشاند.</li></ol>
+  <b>Fachwörter</b>
+  <ol><li>تب «Fachwörter»: لغت‌های تخصصی OPES از قبل هست؛ اسم همکارها و اصطلاح‌های خودت را اضافه کن. Whisper آن‌ها را بهتر می‌شنود و غلط‌های نزدیک را درست می‌کند.</li>
+  <li>روی هر کلمه در متن ← «Als Fachwort». وقتی جمله‌ای را با «Satz korrigieren» درست کنی، برنامه اصلاح را یاد می‌گیرد (مثلاً Botting → Potting) و دفعهٔ بعد خودش درست می‌کند.</li></ol>
+  <b>Strukturen</b>
+  <ol><li>تب «Strukturen» یا دکمهٔ «Strukturen» در پخش‌کننده: الگوهای جمله، Satzklammer، Nebensatz، Passiv و … از جلسه‌های خودت، با ▶ برای شنیدن همان جمله.</li>
+  <li>«Lücken-Übung»: قسمت مهم پنهان می‌شود — اول گوش بده، حدس بزن، بعد رویش بزن.</li></ol>
+  <b>روی کلمه بزن</b>
+  <ol><li>روی هر کلمه بزنی، صدا از همان کلمه پخش می‌شود. برای معنی، دکمهٔ «Bedeutung ›» را که بالای کلمه ظاهر می‌شود بزن.</li></ol>
+  <b>ترنسکریپت در پس‌زمینه (GitHub)</b>
+  <ol><li>Transkript ← «Im Hintergrund (GitHub)» ← یک بار «Hintergrund einrichten».</li>
+  <li>بعد «Hochladen und starten»: چند ثانیه آپلود، بعد اپ را ببند. وقتی دوباره باز کنی، ترنسکریپت آمده؛ اگر متن خودت را هم گذاشته بودی، خودکار روی صدا تنظیم می‌شود.</li></ol>
+  <b>۳) تمرین Hören (پیشنهاد)</b>
+  <ol><li>بار اول: سرعت 0.75× با متن.</li><li>بار دوم: «Text: nach dem Hören» — اول گوش بده، بعد متن باز می‌شود.</li><li>بار سوم: 1.0× با «Text: verborgen».</li><li>جمله سخت؟ «Satz wiederholen».</li></ol>
+  <b>۴) Shadowing</b>
+  <ol><li>«Shadowing» را بزن. هر جمله پخش می‌شود، بعد مکث سبز: همان جمله را بلند تکرار کن.</li>
+  <li>«Pause ×» طول مکث، «Wiederholen» تعداد تکرار، «Mich aufnehmen» صدای خودت را ضبط و پخش می‌کند.</li>
+  <li>دکمه‌های چپ/راست در این حالت یعنی جمله قبلی/بعدی.</li></ol>
+  <b>۵) معنی لغت</b>
+  <ol><li>روی هر کلمه بزن: فارسی + انگلیسی + تلفظ 🔊 + جمله. «In Wortliste speichern» برای لیست لغت.</li>
+  <li>در تب «Wortliste» خروجی CSV برای Excel بگیر.</li></ol>
+  <b>اگر صدا نیامد</b>: دکمه سایلنت آیفون را خاموش کن، ولوم را بالا ببر، یا در «Klang» گزینه را خاموش/روشن کن.
+  </div>`);
+
+/* =========================================================
+   TRANSCRIPTION
+   ========================================================= */
+const TX = {busy:false, stop:false, worker:null, workerModel:null, wake:null};
+const HALLU = /(untertitel|vielen dank für(s| das) zuschauen|copyright|amara\.org|swr 20|zdf|abonniert|bis zum nächsten mal)/i;
+
+function openTxSheet(){
+  if(!cur) return;
+  const partial = cur.tDone && cur.duration && cur.tDone < cur.duration-1 && segs.length;
+  openSheet(`
+    <h3>Transkript erstellen</h3>
+    <label class="opt"><input type="radio" name="m" value="local" ${S.method==='local'?'checked':''}><span><b>Auf dem Gerät</b><small>Kostenlos und privat — das Audio verlässt das Gerät nicht. Braucht beim ersten Mal einen Modell-Download.</small></span></label>
+    <label class="opt"><input type="radio" name="m" value="openai" ${S.method==='openai'?'checked':''}><span><b>OpenAI Whisper (Cloud)</b><small>Sehr schnell und genau. Eigener API-Schlüssel nötig, ca. 0,006 $ pro Minute.</small></span></label>
+    <label class="opt"><input type="radio" name="m" value="cloud" ${S.method==='cloud'?'checked':''}><span><b>Im Hintergrund (GitHub)</b><small>Nur kurz hochladen, dann darf die App zu und das Handy aus sein. Kostenlos, genauer, keine Abstürze.</small></span></label>
+    <div id="cloudOpts" hidden><div class="cloudbox">
+      ${cloudReady() ? `<div class="note">Verbunden mit <b>${esc(cloudCfg().owner)}/${esc(cloudCfg().repo)}</b> · <button class="linkbtn" id="cSet">ändern</button></div>
+      <select id="cMdl" class="sel" style="margin-top:8px"><option value="small">Standard (schneller)</option><option value="large-v3-turbo">Sehr genau (langsamer)</option></select>
+      ${cloudPending(cur) ? `<p class="note">☁︎ Läuft seit ${minsAgo(cur.cloud.sent)} Min., ${cloudEta(cur.cloud)} · <button class="linkbtn" id="cChk">Jetzt prüfen</button></p>` : ''}
+      ${cur.cloud && cur.cloud.error ? `<p class="note">Letzter Versuch: ${esc(cur.cloud.error.slice(0,160))}</p>` : ''}`
+      : `<p class="note" style="margin-top:0">Einmal einrichten (ca. 5 Minuten): privates GitHub-Repository und ein Token.</p><button class="secondary" id="cSet">Hintergrund einrichten</button>`}
+    </div></div>
+    <div id="localOpts">
+      <h4>Genauigkeit</h4>
+      <select id="mdl" style="width:100%;padding:10px;border-radius:10px;border:1.5px solid var(--frame);font-size:16px;background:var(--paper)">
+        <option value="onnx-community/whisper-small">Genau (empfohlen, ~250 MB)</option>
+        <option value="onnx-community/whisper-base">Mittel (~80 MB, schneller)</option>
+        <option value="onnx-community/whisper-tiny">Schnell (~40 MB, ungenau)</option>
+      </select>
+      ${isPhone() && S.model.includes('small') ? '<p class="note">Auf dem iPhone kann „Genau“ wegen zu wenig Speicher abstürzen. Besser: „Im Hintergrund“ oder „Mittel“.</p>' : ''}
+      <label class="opt" style="margin-top:8px"><input type="checkbox" id="gpu" ${S.gpu?'checked':''}><span><b>Grafikchip verwenden (WebGPU)</b><small>Deutlich schneller auf iPad/Mac mit neuem iOS/macOS. Bei Fehlern automatisch aus.</small></span></label>
+    </div>
+    <label class="opt"><input type="checkbox" id="ug" ${S.useGloss?'checked':''}><span><b>Fachwörter beim Erkennen verwenden</b><small>Whisper bekommt deine Fachwortliste als Hinweis (${GL.filter(e=>e.type!=='R').length} Wörter, im Tab „Fachwörter“ erweiterbar).</small></span></label>
+    <label class="opt"><input type="checkbox" id="fx" ${S.fix?'checked':''}><span><b>Fachwörter automatisch korrigieren</b><small>z. B. „Botting“ → „Potting“, „Laminat Inspektion“ → „Laminatinspektion“ und deine gelernten Korrekturen.</small></span></label>
+    <div id="apiOpts" hidden>
+      <h4>OpenAI API-Schlüssel</h4>
+      <input type="password" id="key" placeholder="sk-…" value="${esc(S.key)}" autocomplete="off">
+      <p class="note">Wird nur auf diesem Gerät gespeichert.</p>
+    </div>
+    <div class="progress"><i id="pbar"></i></div>
+    <div class="note" id="pmsg">${partial? `Bisher: ${fmt(cur.tDone)} von ${fmt(cur.duration)}. Start setzt dort fort.` : 'Bereit.'}</div>
+    <div class="row" style="margin-top:14px">
+      <button class="primary" id="goTx" style="flex:1">${partial?'Fortsetzen':(segs.length?'Neu transkribieren':'Start')}</button>
+      <button class="secondary" id="stopTx" hidden>Stopp</button>
+    </div>
+    <h4>Eigenen Text verwenden</h4>
+    <button class="primary" id="alignTx" style="background:var(--ink)">Eigenes Transkript abgleichen</button>
+    <p class="note" style="margin:6px 0 0">Dein Text (Sprachmemos, Teams …) wird Wort für Wort mit dem Audio synchronisiert.</p>
+    <h4>Dateien</h4>
+    <div class="row">
+      ${segs.length ? '<button class="secondary" id="fixNow">Fachwörter jetzt anwenden</button>' : ''}
+      ${segs.some(g => g.alt) ? '<button class="secondary" id="hideAlt">Vergleichszeilen ausblenden</button>' : ''}
+      <button class="secondary" id="impTx">Transkript importieren (.srt .vtt .txt)</button>
+      ${segs.length? '<button class="secondary" id="expSrt">Als .srt exportieren</button><button class="secondary" id="expTxt">Als .txt exportieren</button>':''}
+    </div>
+    <input type="file" id="txIn" accept=".srt,.vtt,.txt,text/plain" hidden>
+    <p class="note" style="margin-top:14px">„Auf dem Gerät“: App offen und Bildschirm an lassen. „Im Hintergrund“: nur während des Hochladens (wenige Sekunden).</p>`, sh => {
+    sh.querySelector('#mdl').value = S.model;
+    const sync = () => { const m = sh.querySelector('input[name=m]:checked').value; S.method = m; saveS(); sh.querySelector('#localOpts').hidden = m!=='local'; sh.querySelector('#apiOpts').hidden = m!=='openai'; sh.querySelector('#cloudOpts').hidden = m!=='cloud'; sh.querySelector('#goTx').textContent = m==='cloud' ? 'Hochladen und starten' : (partial?'Fortsetzen':(segs.length?'Neu transkribieren':'Start')); };
+    const cs = sh.querySelector('#cSet'); if(cs) cs.onclick = openCloudSetup;
+    const cm = sh.querySelector('#cMdl'); if(cm){ cm.value = cloudCfg().model || 'small'; cm.onchange = e => { S.cloud = {...cloudCfg(), model: e.target.value}; saveS(); }; }
+    const cc = sh.querySelector('#cChk'); if(cc) cc.onclick = () => cloudPoll(true);
+    sh.querySelectorAll('input[name=m]').forEach(r => r.onchange = sync); sync();
+    sh.querySelector('#mdl').onchange = e => { S.model = e.target.value; saveS(); };
+    sh.querySelector('#gpu').onchange = e => { S.gpu = e.target.checked; saveS(); };
+    sh.querySelector('#key').oninput = e => { S.key = e.target.value.trim(); saveS(); };
+    sh.querySelector('#goTx').onclick = () => { if(S.method === 'cloud'){ if(cloudPending(cur) && !confirm('Diese Aufnahme läuft schon im Hintergrund. Trotzdem neu hochladen?')) return; cloudSubmit(); return; } if(segs.length && !partial){ if(confirm('Transkript neu erstellen? Der aktuelle Text wird ersetzt (dein eigener Text bleibt gespeichert und kann wieder abgeglichen werden).')) runTranscription(true); } else runTranscription(false); };
+    sh.querySelector('#ug').onchange = e => { S.useGloss = e.target.checked; saveS(); };
+    sh.querySelector('#fx').onchange = e => { S.fix = e.target.checked; saveS(); };
+    sh.querySelector('#alignTx').onclick = openAlignSheet;
+    const ha = sh.querySelector('#hideAlt'); if(ha) ha.onclick = async () => { segs.forEach(g => { delete g.alt; delete g.al; delete g.altSrc; }); await persistSegs(); renderTx(); closeSheet(); toast('Vergleichszeilen ausgeblendet.'); };
+    const fn = sh.querySelector('#fixNow'); if(fn) fn.onclick = async () => { const was = S.fix; S.fix = true; let n = 0; segs.forEach(g => { const t2 = applyGlossary(g.t); if(t2 !== g.t){ g.t = t2; delete g.wt; n++; } }); S.fix = was; await persistSegs(); renderTx(); closeSheet(); toast(n ? `${n} Sätze korrigiert.` : 'Keine Korrekturen nötig.'); };
+    sh.querySelector('#stopTx').onclick = () => { TX.stop = true; setP(null, 'Wird nach dem aktuellen Abschnitt gestoppt…'); };
+    sh.querySelector('#impTx').onclick = () => sh.querySelector('#txIn').click();
+    sh.querySelector('#txIn').onchange = async e => { const f = e.target.files[0]; if(!f) return; const out = parseSubs(await f.text(), audio.duration||cur.duration); if(!out.length){ toast('Keine Sätze gefunden.'); return; } segs = out; await persistSegs({tDone: cur.duration, tSource:'import'}); renderTx(); closeSheet(); toast(`${out.length} Sätze importiert.`); };
+    const es = sh.querySelector('#expSrt'); if(es) es.onclick = () => download(cur.name+'.srt', toSrt(segs), 'text/plain');
+    const et = sh.querySelector('#expTxt'); if(et) et.onclick = () => download(cur.name+'.txt', segs.map(g=>`[${fmt(g.s)}] ${g.t}`).join('\n'), 'text/plain');
+  });
+}
+function setP(frac, msg){ const b=$('#pbar'), m=$('#pmsg'); if(b && frac!=null) b.style.width = Math.round(frac*100)+'%'; if(m && msg) m.textContent = msg; }
+function setBusyUI(busy){ const g=$('#goTx'), s=$('#stopTx'); if(g) g.hidden = busy; if(s) s.hidden = !busy; }
+
+async function decode16k(blob){
+  const ab = await blob.arrayBuffer();
+  const OAC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+  let buf;
+  try{ const oc = new OAC(1, 16000, 16000); buf = await oc.decodeAudioData(ab); }
+  catch(e){ const AC = window.AudioContext||window.webkitAudioContext; const c = new AC(); buf = await c.decodeAudioData(await blob.arrayBuffer()); try{ c.close(); }catch(_){} }
+  let data;
+  if(buf.numberOfChannels === 1) data = buf.getChannelData(0);
+  else { const a=buf.getChannelData(0), b=buf.getChannelData(1); data = new Float32Array(a.length); for(let i=0;i<a.length;i++) data[i]=(a[i]+b[i])/2; }
+  if(buf.sampleRate !== 16000){ // manual resample fallback
+    const ratio = buf.sampleRate/16000, n = Math.floor(data.length/ratio), out = new Float32Array(n);
+    for(let i=0;i<n;i++){ const x=i*ratio, j=Math.floor(x), f=x-j; out[i] = data[j]*(1-f) + (data[j+1]||0)*f; }
+    data = out;
+  }
+  return data;
+}
+function rms(a, s, e){ let t=0; for(let i=s;i<e;i++) t+=a[i]*a[i]; return Math.sqrt(t/Math.max(1,e-s)); }
+function nextCut(a, start, target, minLen){
+  const SR=16000, end = Math.min(a.length, start + target*SR);
+  if(end >= a.length) return a.length;
+  const from = start + minLen*SR, win = SR*0.1; let best = end, bestV = Infinity;
+  for(let p=end-win; p>from; p-=win/2){ const v = rms(a, p, p+win); if(v < bestV){ bestV=v; best=p+win/2; } }
+  return Math.floor(best);
+}
+function cleanSegs(list){
+  const out = []; list = list.slice().sort((a, b) => a.s - b.s);
+  for(const g of list){
+    const t = (g.t||'').replace(/\s+/g,' ').trim();
+    if(!t || HALLU.test(t) || /^[\s.,!?♪*-]+$/.test(t)) continue;
+    if(out.length && out[out.length-1].t === t) continue;
+    out.push({s:g.s, e:Math.max(g.e, g.s+0.3), t});
+  }
+  // split long segments at sentence ends
+  const res = [];
+  for(const g of out){
+    const parts = g.t.match(/[^.!?]+[.!?]+["“”»]?|[^.!?]+$/g) || [g.t];
+    if(g.e-g.s < 9 || parts.length < 2){ res.push(g); continue; }
+    const tot = g.t.length; let acc = 0;
+    parts.forEach(p => { const s = g.s + (g.e-g.s)*acc/tot; acc += p.length; const e = g.s + (g.e-g.s)*acc/tot; if(p.trim()) res.push({s, e, t:p.trim()}); });
+  }
+  // merge very short ones
+  const m = [];
+  for(const g of res){ const L = m[m.length-1]; if(L && (g.e-g.s < 1.2 || L.e-L.s < 1.2) && g.s - L.e < 0.8 && (L.e-L.s)+(g.e-g.s) < 14 && !/[.!?]$/.test(L.t)){ L.e = g.e; L.t += ' ' + g.t; } else m.push({...g}); }
+  return m;
+}
+
+const WORKER_SRC = `
+import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1';
+env.allowLocalModels = false;
+let asr = null;
+async function load(model, gpu){
+  const progress_callback = p => { if(p.status==='progress' && p.total) self.postMessage({type:'dl', file:p.file, loaded:p.loaded, total:p.total}); };
+  if(gpu){
+    try{ asr = await pipeline('automatic-speech-recognition', model, {device:'webgpu', dtype:{encoder_model:'fp32', decoder_model_merged:'q4'}, progress_callback}); return 'webgpu'; }
+    catch(e){ self.postMessage({type:'log', msg:'WebGPU nicht verfügbar, nutze CPU'}); }
+  }
+  asr = await pipeline('automatic-speech-recognition', model, {device:'wasm', dtype:'q8', progress_callback});
+  return 'wasm';
+}
+function promptIds(prompt){
+  const tok = asr.tokenizer, gc = asr.model.generation_config || {};
+  const prev = tok.model.tokens_to_ids.get('<|startofprev|>'), sot = gc.decoder_start_token_id;
+  const lang = gc.lang_to_id && gc.lang_to_id['<|de|>'], task = gc.task_to_id && gc.task_to_id['transcribe'];
+  if([prev, sot, lang, task].some(x => x == null)) return null;
+  let ids = tok.encode(' ' + prompt.trim(), {add_special_tokens:false});
+  if(ids.length > 170) ids = ids.slice(ids.length - 170);
+  return {ids:[prev, ...ids, sot, lang, task], text: tok.decode(ids).trim()};
+}
+const nrm = s => String(s||'').replace(/\\s+/g,' ').trim();
+function stripPrompt(out, p){
+  const P = nrm(p); if(!P) return out;
+  const fix = t => { const T = nrm(t); if(T.startsWith(P)) return T.slice(P.length).trim(); const tail = P.slice(-30), i = T.indexOf(tail); return (i >= 0 && i <= P.length + 5) ? T.slice(i + tail.length).trim() : T; };
+  if(out.chunks && out.chunks.length){ out.chunks = out.chunks.map((c, q) => q === 0 ? {...c, text: fix(c.text)} : c); out.text = out.chunks.map(c => c.text).join(' '); }
+  else out.text = fix(out.text);
+  return out;
+}
+function echoesPrompt(out, p){
+  const t = nrm(out.text).toLowerCase(); if(!t) return false;
+  const terms = p.toLowerCase().split(/[,.:]\\s*/).filter(x => x.length > 4); let hit = 0; for(const x of terms) if(t.includes(x)) hit++;
+  return hit >= 6 && hit > terms.length * 0.25;
+}
+self.onmessage = async e => {
+  const m = e.data;
+  try{
+    if(m.type==='load'){ const d = await load(m.model, m.gpu); self.postMessage({type:'ready', device:d}); }
+    if(m.type==='run'){
+      const opts = {language:'german', task:'transcribe', return_timestamps:true};
+      let out = null, used = false;
+      if(m.prompt){
+        try{ const P = promptIds(m.prompt); if(P){ out = stripPrompt(await asr(m.audio, {...opts, decoder_input_ids: P.ids}), P.text); used = true; if(echoesPrompt(out, P.text)){ out = null; used = false; } } }
+        catch(err){ out = null; used = false; }
+      }
+      if(!out) out = await asr(m.audio, opts);
+      self.postMessage({type:'result', id:m.id, out, prompted: used});
+    }
+  }catch(err){ self.postMessage({type:'error', id:m.id, msg: String(err && err.message || err)}); }
+};`;
+function workerCall(msg, transfer){
+  return new Promise((res, rej) => {
+    const w = TX.worker;
+    const h = e => {
+      const d = e.data;
+      if(d.type==='dl'){ setP(d.loaded/d.total, `Modell wird geladen (nur beim ersten Mal): ${Math.round(d.loaded/1e6)} / ${Math.round(d.total/1e6)} MB`); return; }
+      if(d.type==='log'){ toast(d.msg); return; }
+      w.removeEventListener('message', h); w.removeEventListener('error', eh);
+      d.type==='error' ? rej(new Error(d.msg)) : res(d);
+    };
+    const eh = ev => { w.removeEventListener('message', h); w.removeEventListener('error', eh); ev.preventDefault && ev.preventDefault(); rej(new Error('Transkriptions-Programm konnte nicht geladen werden (network).')); };
+    w.addEventListener('message', h);
+    w.addEventListener('error', eh);
+    w.postMessage(msg, transfer||[]);
+  });
+}
+async function ensureWorker(model){
+  model = model || S.model;
+  if(TX.worker && TX.workerModel === model + S.gpu) return;
+  if(TX.worker) TX.worker.terminate();
+  TX.worker = new Worker(URL.createObjectURL(new Blob([WORKER_SRC], {type:'text/javascript'})), {type:'module'});
+  setP(0, 'Modell wird vorbereitet…');
+  const r = await workerCall({type:'load', model, gpu:S.gpu});
+  TX.workerModel = model + S.gpu;
+  toast(r.device==='webgpu' ? 'Läuft mit Grafikchip.' : 'Läuft mit Prozessor.');
+}
+function encodeWav(f32, sr){
+  const b = new ArrayBuffer(44 + f32.length*2), v = new DataView(b);
+  const w = (o,s) => { for(let i=0;i<s.length;i++) v.setUint8(o+i, s.charCodeAt(i)); };
+  w(0,'RIFF'); v.setUint32(4, 36+f32.length*2, true); w(8,'WAVE'); w(12,'fmt '); v.setUint32(16,16,true); v.setUint16(20,1,true); v.setUint16(22,1,true);
+  v.setUint32(24,sr,true); v.setUint32(28,sr*2,true); v.setUint16(32,2,true); v.setUint16(34,16,true); w(36,'data'); v.setUint32(40,f32.length*2,true);
+  for(let i=0;i<f32.length;i++){ const s=Math.max(-1,Math.min(1,f32[i])); v.setInt16(44+i*2, s<0? s*0x8000 : s*0x7FFF, true); }
+  return b;
+}
+async function openaiChunk(f32){
+  const fd = new FormData();
+  fd.append('file', new Blob([encodeWav(f32,16000)], {type:'audio/wav'}), 'chunk.wav');
+  fd.append('model','whisper-1'); fd.append('language','de'); { const pr = buildPrompt(); if(pr) fd.append('prompt', pr.slice(0, 800)); } fd.append('response_format','verbose_json'); fd.append('timestamp_granularities[]','segment');
+  const r = await fetch('https://api.openai.com/v1/audio/transcriptions', {method:'POST', headers:{Authorization:'Bearer '+S.key}, body:fd});
+  const j = await r.json().catch(()=>({}));
+  if(!r.ok) throw new Error(j.error?.message || ('HTTP '+r.status));
+  return (j.segments||[]).map(s=>({s:s.start, e:s.end, t:s.text}));
+}
+
+async function runTranscription(restart, after){
+  if(TX.busy) return;
+  if(S.method==='openai' && !S.key){ toast('Bitte API-Schlüssel eingeben.'); return; }
+  TX.busy = true; TX.stop = false; setBusyUI(true);
+  try{ if(navigator.wakeLock) TX.wake = await navigator.wakeLock.request('screen'); }catch(e){}
+  try{ if(navigator.storage && navigator.storage.persist) navigator.storage.persist(); }catch(e){}
+  try{
+    if(restart){ segs = []; await persistSegs({tDone:0}); renderTx(); }
+    setP(0, 'Audio wird dekodiert…');
+    const a = await DB.get('audio', cur.id);
+    const pcm = await decode16k(a.blob);
+    const total = pcm.length/16000;
+    let pos = Math.floor((restart? 0 : (cur.tDone||0)) * 16000);
+    if(pos >= pcm.length - 16000){ pos = 0; segs = []; }
+    if(S.method==='local') await ensureWorker();
+    const target = S.method==='local' ? 28 : 600, minLen = S.method==='local' ? 20 : 480;
+    const t0 = performance.now(), startPos = pos;
+    while(pos < pcm.length && !TX.stop){
+      const end = nextCut(pcm, pos, target, minLen);
+      const chunk = pcm.slice(pos, end); const off = pos/16000;
+      let got = [];
+      if(rms(chunk, 0, chunk.length) > 0.0025){
+        if(S.method==='local'){
+          const r = await workerCall({type:'run', id:pos, audio:chunk, prompt: buildPrompt()}, [chunk.buffer]);
+          got = (r.out.chunks||[]).map(c => ({s: off + (c.timestamp[0]??0), e: off + (c.timestamp[1] ?? (end-pos)/16000), t: c.text}));
+          if(!got.length && r.out.text) got = [{s:off, e:end/16000, t:r.out.text}];
+        } else {
+          got = (await openaiChunk(chunk)).map(g => ({s:g.s+off, e:g.e+off, t:g.t}));
+        }
+      }
+      got.forEach(g => { g.t = applyGlossary(g.t); });
+      segs = cleanSegs(segs.concat(got));
+      pos = end;
+      await persistSegs({tDone: pos/16000, tSource:S.method, tModel:S.model});
+      renderTx();
+      const done = (pos-startPos)/16000, el = (performance.now()-t0)/1000, left = (total - pos/16000) * el/Math.max(1,done);
+      setP(pos/pcm.length, `${fmt(pos/16000)} von ${fmt(total)} fertig — noch ca. ${fmt(left)} (${segs.length} Sätze)`);
+    }
+    if(TX.stop) setP(null, `Gestoppt bei ${fmt(pos/16000)}. „Fortsetzen“ macht dort weiter.`);
+    else {
+      cur.whisperSegs = segs.map(g => ({s:g.s, e:g.e, t:g.t}));
+      await persistSegs({whisperSegs: cur.whisperSegs});
+      setP(1, `Fertig: ${segs.length} Sätze.`);
+      if(after){ setP(1, 'Whisper fertig — jetzt wird dein Text abgeglichen…'); await after(pcm); }
+      else toast('Transkript fertig. Tippe auf ein Wort für die Bedeutung.', 4000);
+    }
+  }catch(err){
+    console.error(err);
+    const m = String(err.message||err);
+    setP(null, 'Fehler: ' + m + (/fetch|network|load/i.test(m) ? ' — Internetverbindung prüfen (für den ersten Modell-Download nötig).' : /memory|allocation|OOM/i.test(m) ? ' — Zu wenig Speicher: Modell „Mittel“ wählen und andere Apps schließen.' : ''));
+    if(TX.worker){ TX.worker.terminate(); TX.worker = null; TX.workerModel = null; }
+  }finally{
+    TX.busy = false; setBusyUI(false);
+    try{ TX.wake && TX.wake.release(); }catch(e){} TX.wake = null;
+    const go = $('#goTx'); if(go && cur.tDone < (cur.duration||0) - 1) go.textContent = 'Fortsetzen';
+  }
+}
+$('#txBtn').onclick = openTxSheet;
+$('#stBtn').onclick = () => { if(!segs.length){ toast('Zuerst ein Transkript erstellen oder abgleichen.'); return; } openStructSheet(); };
+
+/* ---------- paste a transcript (e.g. from Voice Memos) ---------- */
+function openPasteSheet(){
+  const has = segs.length > 0;
+  const hasAlt = segs.some(g => g.alt);
+  openSheet(`
+    <h3>Text einfügen</h3>
+    <p class="note">In Sprachmemos: Aufnahme öffnen → Transkript anzeigen → Text kopieren. Dann hier lange tippen → „Einsetzen“.</p>
+    <textarea id="pt" rows="8" placeholder="Transkript hier einsetzen…"></textarea>
+    ${has ? `
+    <h4>Wie verwenden?</h4>
+    <label class="opt"><input type="radio" name="pm" value="compare" checked><span><b>Als Vergleich unter jedem Satz</b><small>Empfohlen. Die Whisper-Zeiten bleiben. Unter jedem Satz steht die Sprachmemos-Version; mit „übernehmen“ nimmst du die bessere.</small></span></label>
+    <label class="opt"><input type="radio" name="pm" value="replace"><span><b>Text komplett ersetzen</b><small>Die Zeiten von Whisper bleiben, der Text kommt aus Sprachmemos.</small></span></label>`
+    : `<p class="note" style="margin-top:10px">Noch kein Whisper-Transkript: Die Zeiten werden nur geschätzt, Shadowing ist dann ungenau. Besser: zuerst „Transkript erstellen“, dann hier einfügen und vergleichen.</p>`}
+    <button class="primary" id="ptGo" style="margin-top:12px">Text verwenden</button>
+    ${hasAlt ? '<button class="secondary" id="ptClear" style="margin-top:10px;width:100%">Vergleich entfernen</button>' : ''}`, sh => {
+    sh.querySelector('#ptGo').onclick = async () => {
+      const text = sh.querySelector('#pt').value.trim();
+      if(text.length < 5){ toast('Bitte zuerst Text einsetzen.'); return; }
+      if(!segs.length){
+        const out = parseSubs(text, audio.duration || cur.duration);
+        if(!out.length){ toast('Keine Sätze gefunden.'); return; }
+        segs = out; await persistSegs({tDone: cur.duration, tSource:'paste'});
+        renderTx(); closeSheet(); toast(`${out.length} Sätze eingefügt (Zeiten geschätzt).`); return;
+      }
+      const mode = sh.querySelector('input[name=pm]:checked').value;
+      const per = alignToSegs(segs, text);
+      let n = 0;
+      segs.forEach((g,i) => { if(!per[i]) return; n++; if(mode==='replace') g.t = per[i]; else g.alt = per[i]; });
+      if(mode==='replace') segs.forEach(g => delete g.alt);
+      await persistSegs(); renderTx(); closeSheet();
+      toast(mode==='replace' ? `Text in ${n} Sätzen ersetzt.` : `Vergleich für ${n} Sätze hinzugefügt.`, 3500);
+    };
+    const c = sh.querySelector('#ptClear');
+    if(c) c.onclick = async () => { segs.forEach(g => delete g.alt); await persistSegs(); renderTx(); closeSheet(); };
+  });
+}
+/* word alignment (banded Needleman–Wunsch) between Whisper words and pasted words */
+function alignToSegs(list, text){
+  const norm = w => w.toLowerCase().normalize('NFC').replace(/[^\p{L}\p{N}]/gu,'');
+  const A = []; list.forEach((g,si) => g.t.split(/\s+/).forEach(w => { const k = norm(w); if(k) A.push({k, si}); }));
+  const Braw = text.replace(/\[?\d{1,2}:\d{2}(?::\d{2})?\]?/g,' ').split(/\s+/).filter(w => norm(w));
+  const B = Braw.map(norm);
+  const n = A.length, m = B.length;
+  const out = new Array(list.length).fill('');
+  if(!n || !m) return out;
+  const sim = (a,b) => { if(a===b) return 3; const L = Math.min(a.length,b.length); if(L>=4 && a.slice(0,4)===b.slice(0,4)) return 1; return -1; };
+  const W = Math.min(Math.max(60, Math.ceil(Math.abs(n-m)) + 60), 500), BW = 2*W+1;
+  const H = new Float32Array((n+1)*BW).fill(-1e9), D = new Uint8Array((n+1)*BW); // 1 diag, 2 up(skip A), 3 left(skip B)
+  const cj = i => Math.round(i*m/n);
+  const idx = (i,j) => { const o = j - cj(i) + W; return (o<0||o>=BW) ? -1 : i*BW+o; };
+  for(let j=0;j<=Math.min(m,W);j++){ const k = idx(0,j); if(k>=0){ H[k] = -j; D[k] = 3; } }
+  for(let i=1;i<=n;i++){
+    const c = cj(i);
+    for(let j=Math.max(0,c-W); j<=Math.min(m,c+W); j++){
+      const k = idx(i,j); let best = -1e9, dir = 0, t;
+      if(j>0){ const kd = idx(i-1,j-1); if(kd>=0 && (t = H[kd] + sim(A[i-1].k, B[j-1])) > best){ best=t; dir=1; } }
+      const ku = idx(i-1,j); if(ku>=0 && (t = H[ku] - 1) > best){ best=t; dir=2; }
+      if(j>0){ const kl = idx(i,j-1); if(kl>=0 && (t = H[kl] - 1) > best){ best=t; dir=3; } }
+      H[k] = best; D[k] = dir;
+    }
+  }
+  // traceback
+  const segOfB = new Int32Array(m).fill(-1);
+  let i = n, j = m, guard = 0;
+  if(idx(n,m) < 0){ j = Math.min(m, cj(n)+W); }
+  while(i>0 && j>0 && guard++ < (n+m)*2){
+    const k = idx(i,j); const d = k>=0 ? D[k] : 2;
+    if(d===1){ segOfB[j-1] = A[i-1].si; i--; j--; }
+    else if(d===2){ i--; }
+    else { j--; }
+  }
+  // unaligned pasted words follow the previous aligned word (or the next one at the start)
+  let last = -1; for(let q=0;q<m;q++){ if(segOfB[q]>=0) last = segOfB[q]; else segOfB[q] = last; }
+  let nxt = 0; for(let q=m-1;q>=0;q--){ if(segOfB[q]>=0) nxt = segOfB[q]; else segOfB[q] = nxt; }
+  Braw.forEach((w,q) => { const si = segOfB[q]; out[si] = out[si] ? out[si] + ' ' + w : w; });
+  return out;
+}
+
+/* subtitles import/export */
+function parseTime(s){ const m = s.trim().replace(',', '.').split(':').map(Number); return m.length===3 ? m[0]*3600+m[1]*60+m[2] : m[0]*60+m[1]; }
+function parseSubs(text, dur){
+  const out = []; const re = /(\d{1,2}:\d{2}(?::\d{2})?[.,]\d{1,3})\s*-->\s*(\d{1,2}:\d{2}(?::\d{2})?[.,]\d{1,3})[^\n]*\n([\s\S]*?)(?=\n\s*\n|$)/g; let m;
+  while((m = re.exec(text.replace(/\r/g,'')))) out.push({s:parseTime(m[1]), e:parseTime(m[2]), t:m[3].replace(/<[^>]+>/g,'').replace(/\n/g,' ').trim()});
+  if(out.length) return cleanSegs(out);
+  // plain text with [mm:ss] stamps?
+  const lines = text.split(/\n+/).map(l=>l.trim()).filter(Boolean);
+  const st = lines.map(l => { const k = l.match(/^\[?(\d{1,2}:\d{2}(?::\d{2})?)\]?\s*(.*)$/); return k ? {s:parseTime(k[1]+'.0'), t:k[2]} : null; });
+  if(st.every(Boolean)) return cleanSegs(st.map((g,i)=>({s:g.s, e: st[i+1]? st[i+1].s : (dur||g.s+5), t:g.t})));
+  // plain text without timings: spread by length (approximate)
+  const sents = text.replace(/\s+/g,' ').match(/[^.!?]+[.!?]*/g) || [];
+  const tot = sents.reduce((a,s)=>a+s.length,0); let acc = 0; const D = dur || tot/15;
+  return sents.map(s => { const a = acc; acc += s.length; return {s:D*a/tot, e:D*acc/tot, t:s.trim()}; }).filter(g=>g.t);
+}
+function toSrt(list){ const T = t => { const ms = Math.round(t*1000); const h=Math.floor(ms/3600000), m=Math.floor(ms%3600000/60000), s=Math.floor(ms%60000/1000), x=ms%1000; return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')},${String(x).padStart(3,'0')}`; }; return list.map((g,i)=>`${i+1}\n${T(g.s)} --> ${T(g.e)}\n${g.t}\n`).join('\n'); }
+
+/* lock-screen controls */
+function setupMediaSession(){
+  if(!('mediaSession' in navigator) || !cur) return;
+  navigator.mediaSession.metadata = new MediaMetadata({title: cur.name, artist:'Hören-Trainer'});
+  const h = (a,f) => { try{ navigator.mediaSession.setActionHandler(a,f); }catch(e){} };
+  h('play', ()=>play()); h('pause', ()=>audio.pause());
+  h('seekbackward', ()=>nudge(-10)); h('seekforward', ()=>nudge(10));
+}
+
+/* ---------- default glossary (from OPES Lernblätter, OSM460 Handbuch, Meeting-Deutsch) ----------
+   term | Persian meaning | P = used in the Whisper prompt | V = verb */
+const GLOSS_DEFAULT = `Laminator|دستگاه لمینیتور (پرس)|P
+Lamination|لمینیشن|P
+Laminieren|لمینیت کردن|
+Laminat|لمینیت|
+Laminatinspektion|بازرسی لمینیت|P
+Laminatkante|لبهٔ لمینیت|
+Potting|پاتینگ (پر کردن با رزین)|P
+Vergussmasse|مادهٔ پاتینگ|P
+Verguss|پاتینگ، ریخته‌گری|
+Modulkontrolle|کنترل ماژول|P
+Modulinspektion|بازرسی ماژول|
+Sichtprüfung|بازرسی چشمی|P
+Elektrolumineszenz|الکترولومینسانس|
+EL-Bild|تصویر EL|P
+EL-Bilder|تصاویر EL|
+EL-Bewertung|ارزیابی EL|
+Pre-EL|EL قبل از لمینیشن|P
+Fehlerkatalog|کاتالوگ خطا|
+Fehlercode|کد خطا|P
+Fehlerquote|نرخ خطا|P
+Fehlerbild|الگوی خطا|
+Zellbruch|شکستگی سلول|P
+Mikroriss|ریزترک|P
+Mikrorisse|ریزترک‌ها|
+Zellkante|لبهٔ سلول|
+Zellmatrix|ماتریس سلول‌ها|
+Zellfragment|تکهٔ سلول|
+Blasen|حباب‌ها|P
+Blasencluster|خوشهٔ حباب|
+Hohlräume|حفره‌ها|
+Delamination|جدایش لایه‌ها|P
+Verschmutzung|آلودگی|
+Verunreinigung|ناخالصی، آلودگی|
+Fremdkörper|جسم خارجی|P
+Partikel|ذره|
+Kratzer|خراش|
+Glasbruch|شکستگی شیشه|P
+Glaskante|لبهٔ شیشه|
+Frontglas|شیشهٔ جلو|
+Einbettmaterial|مادهٔ انکپسولانت|
+Encapsulant|انکپسولانت|P
+Verfärbung|تغییر رنگ|
+Verformung|تغییر شکل|
+Rahmen|قاب|
+Rahmenecken|گوشه‌های قاب|
+Rahmenkante|لبهٔ قاب|
+Gehrung|اتصال گونیایی قاب|
+Silikonnaht|درز سیلیکون|
+Silikonüberstand|سیلیکون اضافه|
+Kantenband|نوار لبه|
+Edge-Tape|نوار لبه|P
+Abdeckstreifen|نوار پوششی|
+Anschlussdose|جعبه اتصال|P
+Junction Box|جعبه اتصال|P
+Stecker|کانکتور|
+Lötstelle|نقطهٔ لحیم|
+Kontaktfehler|خطای اتصال|
+Kurzschluss|اتصال کوتاه|
+Übergangswiderstand|مقاومت اتصال|
+Bussbar|باس‌بار|P
+Ribbon|ریبون (نوار مسی)|P
+ECA-Tape|نوار چسب رسانا (ECA)|P
+ECA-Overflow|بیرون‌زدگی چسب رسانا|
+Cu-Tape|نوار مسی|
+EPE-Tape|نوار EPE|
+Randisolationsabstand|فاصلهٔ عایقی لبه|P
+Isolationsabstand|فاصلهٔ عایقی|
+Laminat-Label|برچسب لمینیت|
+QR-Code-Label|برچسب کد QR|
+Abdichtung|آب‌بندی|
+Verbinder|رابط، شینه|
+Strings|رشته‌های سلول|P
+Stromkreis|مدار|
+Leistungsmessung|اندازه‌گیری توان|P
+Leistungsverlust|افت توان|
+Leistungsklasse|کلاس توان|
+Flasher|فلاشر (تست IV)|P
+Füllfaktor|فیل فاکتور|
+Kalibrierung|کالیبراسیون|P
+Degradation|تخریب، افت عملکرد|
+Hi-pot|تست Hi-pot|P
+Wet-Leakage-Test|تست نشتی مرطوب|P
+Surveillance-Test|تست نظارتی|
+Nacharbeit|بازکاری|P
+Ausschuss|ضایعات|P
+Abwertung|کاهش درجه|
+Freigabe|آزادسازی، تأیید|P
+Charge|بچ، دسته|P
+Abweichung|انحراف|P
+Maßnahme|اقدام|P
+Ursache|علت|
+Auswirkung|اثر، پیامد|
+Grenzwert|حد مجاز|
+Kriterien|معیارها|
+Spezifikation|مشخصات فنی|
+Stückzahl|تعداد|P
+Taktzeit|زمان تکت|
+Zykluszeit|زمان سیکل|
+Stillstand|توقف خط|P
+Verfügbarkeit|دسترس‌پذیری|
+Rückverfolgbarkeit|ردیابی|
+Seriennummer|شمارهٔ سریال|
+Palette|پالت|
+Morgenmeeting|جلسهٔ صبح|P
+Messdaten|داده‌های اندازه‌گیری|
+Auswertung|تحلیل داده|
+Bewertung|ارزیابی|
+Feststellung|یافته، تشخیص|
+Abstimmung|هماهنگی|
+Durchführung|اجرا|
+Überprüfung|بازبینی|
+Anforderung|الزام|
+Vermutung|حدس، فرضیه|
+Lieferant|تأمین‌کننده|
+Befund|یافته|
+Bediener|اپراتور|
+Wabenstruktur|ساختار لانه‌زنبوری|
+Polarität|قطبیت|
+Kontaktierung|اتصال‌دهی|
+Ausbruch|لب‌پریدگی|
+Einschlüsse|آخال، ذرات محبوس|
+Fingerabdrücke|اثر انگشت|
+Silizium|سیلیسیم|
+Trimming|برش لبه‌ها|
+Framing|قاب‌زنی|
+Dashboard|داشبورد|P
+Power BI|Power BI|P
+MES|سیستم اجرای تولید|P
+OEE|اثربخشی کلی تجهیزات|P
+Pareto|نمودار پارتو|
+Heatmap|نقشهٔ حرارتی|
+OSM460|ماژول OSM460|P
+OPES|OPES|P
+Zwenkau|Zwenkau|
+IEC 61215|استاندارد IEC 61215|P
+IEC 61730|استاندارد IEC 61730|
+IV-Kurve|منحنی IV|P
+Klasse A|کلاس A|P
+feststellen|تشخیص دادن|V
+festlegen|تعیین کردن|V
+abstimmen|هماهنگ کردن|V
+klären|روشن کردن|V
+durchführen|انجام دادن|V
+auswerten|تحلیل کردن|V
+bewerten|ارزیابی کردن|V
+prüfen|بررسی کردن|V
+überprüfen|بازبینی کردن|V
+bestätigen|تأیید کردن|V
+nacharbeiten|بازکاری کردن|V
+anpassen|تطبیق دادن|V
+ausschleusen|از خط خارج کردن|V
+umstellen|تغییر دادن|V
+umsetzen|اجرا کردن|V
+sicherstellen|اطمینان حاصل کردن|V
+vorbereiten|آماده کردن|V
+darstellen|نمایش دادن|V
+übernehmen|بر عهده گرفتن|V
+anlegen|ایجاد کردن (در سیستم)|V
+einhalten|رعایت کردن|V
+erfüllen|برآورده کردن|V
+nachweisen|اثبات کردن|V
+verhindern|جلوگیری کردن|V
+einstellen|تنظیم کردن|V
+aussortieren|کنار گذاشتن|V
+abschließen|به پایان رساندن|V
+zurückstellen|عقب انداختن|V
+erfassen|ثبت کردن|V
+freigeben|آزاد کردن، تأیید کردن|V
+abrufen|فراخوانی کردن (داده)|V
+übereinstimmen|مطابقت داشتن|V
+auftreten|رخ دادن|V
+zurückführen|نسبت دادن|V
+abstellen|برطرف کردن (علت)|V
+verschieben|جابه‌جا کردن|V
+vermuten|حدس زدن|V`.split('\n').map(l => { const [term, fa, f] = l.split('|'); return {term, fa, type: f==='V' ? 'V' : 'N', prio: f==='P'}; });
+
+/* =========================================================
+   TEXT TOOLS
+   ========================================================= */
+const normW = w => String(w).toLowerCase().normalize('NFC').replace(/[^\p{L}\p{N}]/gu, '');
+function koeln(word){ // Kölner Phonetik — German sound code, so "Botting" ≈ "Potting"
+  const s = String(word).toLowerCase().replace(/ä/g,'a').replace(/ö/g,'o').replace(/ü/g,'u').replace(/ß/g,'s').replace(/ph/g,'f').replace(/[^a-z]/g,'');
+  let raw = '';
+  for(let i=0;i<s.length;i++){
+    const c=s[i], p=s[i-1]||'', n=s[i+1]||''; let d='';
+    if('aeijouy'.includes(c)) d='0';
+    else if(c==='h') d='';
+    else if(c==='b' || c==='p') d='1';
+    else if(c==='d'||c==='t') d = 'csz'.includes(n) ? '8' : '2';
+    else if('fvw'.includes(c)) d='3';
+    else if('gkq'.includes(c)) d='4';
+    else if(c==='c'){ if(i===0) d = 'ahkloqrux'.includes(n) ? '4' : '8'; else d = 'sz'.includes(p) ? '8' : ('ahkoqux'.includes(n) ? '4' : '8'); }
+    else if(c==='x') d = 'ckq'.includes(p) ? '8' : '48';
+    else if(c==='l') d='5';
+    else if(c==='m'||c==='n') d='6';
+    else if(c==='r') d='7';
+    else if(c==='s'||c==='z') d='8';
+    raw += d === '' ? '|' : d;
+  }
+  let out='', last='';
+  for(const ch of raw){ if(ch==='|'){ continue; } if(ch!==last) out+=ch; last=ch; }
+  return out ? out[0] + out.slice(1).replace(/0/g,'') : '';
+}
+function lev(a,b){ if(a===b) return 0; const m=a.length, n=b.length; if(!m) return n; if(!n) return m; let prev=new Array(n+1), cur=new Array(n+1); for(let j=0;j<=n;j++) prev[j]=j; for(let i=1;i<=m;i++){ cur[0]=i; const ca=a.charCodeAt(i-1); for(let j=1;j<=n;j++) cur[j]=Math.min(prev[j]+1, cur[j-1]+1, prev[j-1]+(ca===b.charCodeAt(j-1)?0:1)); [prev,cur]=[cur,prev]; } return prev[n]; }
+const sylCount = w => { if(/^\d/.test(w)) return Math.max(1, Math.round(w.replace(/\D/g,'').length*1.6)); const m = String(w).toLowerCase().match(/[aeiouyäöü]+/g); return Math.max(1, m ? m.length : 1); };
+const mkWord = w => { const k = normW(w); return {w, k, ph: k ? koeln(k) : '', syl: sylCount(w)}; };
+function simW(a, b){ // cheap similarity for alignment
+  if(!a.k || !b.k) return -1;
+  if(a.k === b.k) return 3;
+  if(a.ph && a.ph === b.ph && Math.min(a.k.length, b.k.length) >= 4) return 2;
+  if(a.k.length >= 5 && b.k.length >= 5 && a.k.slice(0,4) === b.k.slice(0,4)) return 1;
+  return -1;
+}
+
+/* =========================================================
+   GLOSSARY (Fachwörter)
+   ========================================================= */
+let GL = [], GLmap = new Map(), GLrules = [];
+async function loadGloss(){
+  GL = await DB.all('gloss');
+  if(!GL.length && !localStorage.getItem('ht-gloss-seeded')){ await seedGloss(); }
+  buildGlossIndex();
+}
+async function seedGloss(){
+  for(const g of GLOSS_DEFAULT) await DB.put('gloss', {id:'d-'+normW(g.term), term:g.term, fa:g.fa, type:g.type, prio:g.prio, custom:false, added:0});
+  try{ localStorage.setItem('ht-gloss-seeded','1'); }catch(e){}
+  GL = await DB.all('gloss');
+}
+function buildGlossIndex(){
+  GLmap = new Map(); GLrules = [];
+  GL.forEach(e => { e.k = normW(e.term); e.ph = koeln(e.k); if(e.type === 'R'){ const fk = normW(e.from||''); if(fk) GLrules.push({fk, n: String(e.from).trim().split(/[\s-]+/).length, term: e.term}); } else if(e.k) GLmap.set(e.k, e); });
+}
+function glossLookup(word){
+  const k = normW(word); if(!k) return null; if(GLmap.has(k)) return GLmap.get(k);
+  for(const suf of ['en','n','e','s','es','er','ern','ung']) if(k.length>suf.length+3 && k.endsWith(suf) && GLmap.has(k.slice(0,-suf.length))) return GLmap.get(k.slice(0,-suf.length));
+  return null;
+}
+function buildPrompt(){
+  if(!S.useGloss || !GL.length) return '';
+  const own = GL.filter(e => e.custom).sort((a,b)=>b.added-a.added).map(e => e.term);
+  const def = GL.filter(e => !e.custom && e.prio).map(e => e.term);
+  let out = 'Morgenmeeting bei OPES Solar Mobility, Qualität und Produktion: ';
+  for(const t of [...new Set([...own, ...def])]){ if((out + t).length > 560) break; out += t + ', '; }
+  return out.replace(/, $/, '.');
+}
+function applyGlossary(text){
+  if(!S.fix || !GL.length || !text) return text;
+  const terms = GL.filter(e => e.type !== 'V' && e.k.length >= 5);
+  const parts = text.split(/(\s+)/);
+  let idx = []; parts.forEach((p,i) => { if(i%2===0 && p) idx.push(i); });
+  const lead = w => (w.match(/^[^\p{L}\p{N}]+/u)||[''])[0], trail = w => (w.match(/[^\p{L}\p{N}]+$/u)||[''])[0];
+  // 0) your learned corrections ("falsch → richtig")
+  for(let n=3; n>=1 && GLrules.length; n--){
+    for(let q=0; q+n<=idx.length; q++){
+      const ws = idx.slice(q, q+n).map(i => parts[i]);
+      if(ws.slice(0,-1).some(w => /[.,;:!?]$/.test(w))) continue;
+      const k = normW(ws.join('')), r = GLrules.find(x => x.fk === k);
+      if(r){ parts[idx[q]] = lead(ws[0]) + r.term + trail(ws[n-1]); for(let z=1; z<n; z++){ parts[idx[q+z]] = ''; parts[idx[q+z]-1] = ''; } idx.splice(q+1, n-1); }
+    }
+  }
+  // 1) split compounds: "Laminat Inspektion" → "Laminatinspektion"
+  for(let n=3; n>=2; n--){
+    for(let q=0; q+n<=idx.length; q++){
+      const ws = idx.slice(q, q+n).map(i => parts[i]);
+      if(ws.slice(0,-1).some(w => /[.,;:!?]$/.test(w))) continue;
+      const e = GLmap.get(normW(ws.join('')));
+      if(e && e.type !== 'V' && e.k.length >= 6){
+        parts[idx[q]] = lead(ws[0]) + e.term + trail(ws[n-1]);
+        for(let r=1; r<n; r++){ parts[idx[q+r]] = ''; parts[idx[q+r]-1] = ''; }
+        idx.splice(q+1, n-1);
+      }
+    }
+  }
+  // 2) near-misses: "Botting" → "Potting", "Laminatur" → "Laminator"
+  for(const i of idx){
+    const w = parts[i]; if(!w) continue;
+    const core = w.replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, ''); const k = normW(core);
+    if(k.length < 6 || glossLookup(core)) continue;
+    const ph = koeln(k); let best = null, bd = 9;
+    for(const e of terms){
+      if(Math.abs(e.k.length - k.length) > 2 || (e.k[0] !== k[0] && e.ph !== ph)) continue;
+      const d = lev(k, e.k), lim = k.length >= 10 ? 2 : 1;
+      if(d <= lim && d < bd && (e.ph === ph || (d === 1 && k.length >= 8))){ bd = d; best = e; }
+    }
+    if(best) parts[i] = w.replace(core, /^\p{Lu}/u.test(core) || best.type!=='V' ? best.term : best.term.toLowerCase());
+  }
+  return parts.join('').replace(/ {2,}/g, ' ').trim();
+}
+
+function learnRules(a, b){ // what did she correct? → reusable rules
+  const A = a.split(/\s+/).filter(Boolean), B = b.split(/\s+/).filter(Boolean), ka = A.map(normW), kb = B.map(normW);
+  const n = ka.length, m = kb.length; if(!n || !m || n > 120 || m > 120) return [];
+  const L = Array.from({length:n+1}, () => new Int16Array(m+1));
+  for(let i=n-1;i>=0;i--) for(let j=m-1;j>=0;j--) L[i][j] = ka[i]===kb[j] ? L[i+1][j+1]+1 : Math.max(L[i+1][j], L[i][j+1]);
+  const out = [], strip = x => x.replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, '');
+  let i=0, j=0, bi=null, bj=null;
+  const flush = (ie, je) => {
+    if(bi === null) return;
+    const f = strip(A.slice(bi, ie).join(' ')), t = strip(B.slice(bj, je).join(' ')); bi = bj = null;
+    const nf = normW(f), nt = normW(t);
+    if(nf && nf === nt && /\s/.test(f) && !/\s/.test(t) && nf.length >= 6){ out.push([f, t]); return; } // "Kontakt fehler" → "Kontaktfehler"
+    if(!nf || !nt || nf === nt || nf.length < 3) return;
+    if(f.split(' ').length > 3 || t.split(' ').length > 3) return;
+    if((nt.startsWith(nf) || nf.startsWith(nt)) && Math.abs(nt.length - nf.length) <= 2) return; // just grammar endings
+    if(!/^\p{Lu}/u.test(t) && !/[-\d]/.test(t) && !GLmap.has(nt)) return;                      // only terms / names
+    if(t.split(' ').some(w => /^\p{Ll}/u.test(w) && !GLmap.has(normW(w)))) return;              // no grammar words
+    out.push([f, t]);
+  };
+  while(i<n || j<m){
+    if(i<n && j<m && ka[i]===kb[j]){ flush(i, j); i++; j++; }
+    else { if(bi === null){ bi = i; bj = j; } if(j<m && (i>=n || L[i][j+1] >= L[i+1][j])) j++; else i++; }
+  }
+  flush(n, m);
+  return out.slice(0, 3);
+}
+
+/* =========================================================
+   ALIGNMENT — your own transcript ↔ audio
+   ========================================================= */
+function vad(pcm){
+  const F = 320, nF = Math.max(1, Math.floor(pcm.length/F)), e = new Float32Array(nF);
+  for(let f=0; f<nF; f++){ let s=0; const o=f*F; for(let i=0;i<F;i++){ const v=pcm[o+i]||0; s+=v*v; } e[f] = 10*Math.log10(s/F + 1e-10); }
+  const sorted = Float32Array.from(e).sort(), pct = p => sorted[Math.min(nF-1, Math.floor(p*nF))];
+  const floor = pct(0.1), top = pct(0.95), thr = floor + Math.max(6, (top-floor)*0.3);
+  const sp = new Uint8Array(nF); for(let f=0; f<nF; f++) sp[f] = e[f] > thr ? 1 : 0;
+  for(let f=0; f<nF;){ if(!sp[f]){ let g=f; while(g<nF && !sp[g]) g++; if(f>0 && g<nF && g-f < 11) sp.fill(1, f, g); f=g; } else f++; } // close gaps < 220 ms
+  for(let f=0; f<nF;){ if(sp[f]){ let g=f; while(g<nF && sp[g]) g++; if(g-f < 5) sp.fill(0, f, g); f=g; } else f++; }      // drop clicks < 100 ms
+  const cs = new Int32Array(nF+1); for(let q=0;q<nF;q++) cs[q+1] = cs[q] + sp[q];
+  let first = 0; for(let q=0;q<nF;q++) if(sp[q]){ first=q*0.02; break; }
+  let last = nF*0.02; for(let q=nF-1;q>=0;q--) if(sp[q]){ last=(q+1)*0.02; break; }
+  const S_ = t => cs[Math.max(0, Math.min(nF, Math.round(t/0.02)))] * 0.02;
+  const Tend = s => { const target = Math.round(s/0.02); let lo=0, hi=nF; while(lo<hi){ const m=(lo+hi)>>1; if(cs[m] < target) lo=m+1; else hi=m; } return lo*0.02; };   // end of speech (before a pause)
+  const Tstart = s => { const target = Math.round(s/0.02); let lo=0, hi=nF; while(lo<hi){ const m=(lo+hi)>>1; if(cs[m] <= target) lo=m+1; else hi=m; } return Math.max(0,(lo-1))*0.02; }; // onset (after a pause)
+  const fr = t => Math.max(0, Math.min(nF-1, Math.floor(t/0.02)));
+  const speechAt = t => sp[fr(t)] === 1;
+  const nextSilence = (t, max) => { for(let q=fr(t), e=fr(t+max); q<=e; q++) if(!sp[q]) return q*0.02; return null; };
+  const nextSpeech = (t, max) => { for(let q=fr(t), e=fr(t+max); q<=e; q++) if(sp[q]) return q*0.02; return null; };
+  const prevSpeechEnd = (t, max) => { for(let q=fr(t), e=fr(t-max); q>=e; q--) if(sp[q]) return (q+1)*0.02; return null; };
+  // sentence start: if it lands in the tail of a speech run or inside a pause, move it to the next onset
+  const snapStart = t => {
+    if(!speechAt(t)){ const on = nextSpeech(t, 12); return on != null ? on : t; }
+    const off = nextSilence(t, 0.7); if(off == null) return t;
+    const on = nextSpeech(off, 12); if(on == null || on - off < 0.3) return t;
+    return on;
+  };
+  // sentence end: if it lands in the head of a speech run after a pause (or inside a pause), move it back to the pause start
+  const snapEnd = t => {
+    if(!speechAt(t)){ const pe = prevSpeechEnd(t, 12); return pe != null ? pe : t; }
+    const pe = prevSpeechEnd(t - 0.02, 0.7);
+    for(let q=fr(t); q>=fr(t-0.7); q--){ if(!sp[q]){ const e2 = prevSpeechEnd(q*0.02, 12); if(e2 != null && q*0.02 - e2 >= 0.28) return e2; break; } }
+    return t;
+  };
+  const pauses = []; // [start, end] of silences ≥ 280 ms
+  for(let f=0; f<nF;){ if(!sp[f]){ let g=f; while(g<nF && !sp[g]) g++; if(g-f >= 14 && f>0 && g<nF) pauses.push([f*0.02, g*0.02]); f=g; } else f++; }
+  const nearPause = (b, maxD) => {
+    let lo=0, hi=pauses.length; while(lo<hi){ const m=(lo+hi)>>1; if(pauses[m][1] < b) lo=m+1; else hi=m; }
+    let best=null, bd=maxD;
+    for(const q of [lo-1, lo, lo+1]){ const P = pauses[q]; if(!P) continue; const d = b < P[0] ? P[0]-b : (b > P[1] ? b-P[1] : 0); if(d <= bd){ bd=d; best=P; } }
+    return best;
+  };
+  return {nF, cs, sp, first, last, S:S_, Tend, Tstart, total: cs[nF]*0.02, speechAt, snapStart, snapEnd, nearPause};
+}
+function parseUserText(text){
+  const clean = String(text).replace(/\r/g,'')
+    .replace(/^\s*\d+\s*$/gm, '')                                             // srt counters
+    .replace(/^.*-->.*$/gm, '').replace(/^WEBVTT.*$/gm,'').replace(/<[^>]+>/g,'')
+    .replace(/\[?\b\d{1,2}:\d{2}(?::\d{2})?(?:[.,]\d+)?\]?/g, ' ')              // time stamps
+    .replace(/[ \t]+/g, ' ').trim();
+  const rough = clean.replace(/([.!?…])\s+/g, '$1\n').split(/\n+/).map(s => s.trim()).filter(Boolean);
+  const sents = [];
+  for(const s of rough){
+    const ws = s.split(/\s+/);
+    if(ws.length <= 28){ sents.push(s); continue; }
+    let cur = [];
+    for(const w of ws){ cur.push(w); if((cur.length >= 12 && /[,;:]$/.test(w)) || cur.length >= 22){ sents.push(cur.join(' ')); cur = []; } }
+    if(cur.length) sents.push(cur.join(' '));
+  }
+  const words = [];
+  sents.forEach((s, si) => s.split(/\s+/).forEach(w => { const o = mkWord(w); o.si = si; words.push(o); }));
+  return {sents, words};
+}
+function nwAlign(A, B){ // banded global alignment → matched index pairs
+  const n = A.length, m = B.length; if(!n || !m) return [];
+  const W = Math.min(Math.max(80, Math.abs(n-m) + 80), 450), BW = 2*W+1;
+  const H = new Float32Array((n+1)*BW).fill(-1e9), D = new Uint8Array((n+1)*BW);
+  const cj = i => Math.round(i*m/n), idx = (i,j) => { const o = j - cj(i) + W; return (o<0||o>=BW) ? -1 : i*BW+o; };
+  for(let j=0; j<=Math.min(m,W); j++){ const k = idx(0,j); if(k>=0){ H[k] = -j; D[k] = 3; } }
+  for(let i=1; i<=n; i++){
+    const c = cj(i);
+    for(let j=Math.max(0,c-W); j<=Math.min(m,c+W); j++){
+      const k = idx(i,j); let best = -1e9, dir = 0, t;
+      if(j>0){ const kd = idx(i-1,j-1); if(kd>=0 && (t = H[kd] + simW(A[i-1], B[j-1])) > best){ best=t; dir=1; } }
+      const ku = idx(i-1,j); if(ku>=0 && (t = H[ku] - 1) > best){ best=t; dir=2; }
+      if(j>0){ const kl = idx(i,j-1); if(kl>=0 && (t = H[kl] - 1) > best){ best=t; dir=3; } }
+      H[k] = best; D[k] = dir;
+    }
+  }
+  const pairs = []; let i = n, j = m, guard = 0;
+  if(idx(n,m) < 0) j = Math.min(m, cj(n) + W);
+  while(i>0 && j>0 && guard++ < (n+m)*2){
+    const k = idx(i,j), d = k>=0 ? D[k] : 2;
+    if(d===1){ if(simW(A[i-1], B[j-1]) > 0) pairs.push([i-1, j-1]); i--; j--; }
+    else if(d===2) i--; else j--;
+  }
+  return pairs.reverse();
+}
+function swAlign(A, B){ // local alignment (window ↔ region)
+  const n=A.length, m=B.length, M=m+1; const H=new Float32Array((n+1)*M), D=new Uint8Array((n+1)*M); let best=0, bi=0, bj=0;
+  for(let i=1;i<=n;i++) for(let j=1;j<=m;j++){
+    const k=i*M+j, d=H[k-M-1]+simW(A[i-1],B[j-1]), u=H[k-M]-1.5, l=H[k-1]-1.5; let v=0, dir=0;
+    if(d>v){v=d;dir=1;} if(u>v){v=u;dir=2;} if(l>v){v=l;dir=3;}
+    H[k]=v; D[k]=dir; if(v>best){best=v; bi=i; bj=j;}
+  }
+  const pairs=[]; let i=bi, j=bj;
+  while(i>0 && j>0){ const d=D[i*M+j]; if(!d) break; if(d===1){ if(simW(A[i-1],B[j-1])>0) pairs.push([i-1,j-1]); i--; j--; } else if(d===2) i--; else j--; }
+  return {score:best, pairs:pairs.reverse()};
+}
+function wordsFromSegs(list, V){ // whisper segments → words with estimated times
+  const out = [];
+  list.forEach(g => {
+    if(g.words && g.words.length){ g.words.forEach((x, q) => { const o = mkWord(x[0]); o.t = x[1]; o.segStart = q === 0; out.push(o); }); return; }
+    const ws = String(g.t).split(/\s+/).filter(Boolean).map(mkWord); if(!ws.length) return;
+    const tot = ws.reduce((a,w)=>a+w.syl,0), s0 = V.S(g.s), s1 = Math.max(s0+0.02, V.S(g.e)); let acc = 0;
+    ws.forEach((w, q) => { w.t = q===0 ? g.s : V.Tstart(s0 + (s1-s0)*acc/tot); acc += w.syl; w.segStart = q===0; out.push(w); });
+  });
+  return out;
+}
+const STOP = new Set('der die das den dem des ein eine einen einem einer eines und oder aber ist sind war waren hat haben habe hatte ich du er sie es wir ihr ja nein nicht noch auch so da dann wie was wo wer mit von vom zu zum zur im in am an auf aus bei beim für mal schon doch gut genau also hier jetzt nur man dass wenn weil ob kann muss soll wird werden wurde okay ok äh ähm eben halt immer sehr mehr kein keine sich uns mir mich dir dich ihm ihn ihnen denn gleich einfach eigentlich'.split(' '));
+const isContent = w => w.k.length >= 5 && !STOP.has(w.k);
+function reliablePairs(pairs, A, B){ // keep matches that come in runs with a real content word — no lonely "das"/"ist"
+  const out = []; let q = 0;
+  while(q < pairs.length){
+    let r = q; while(r+1 < pairs.length && pairs[r+1][0] === pairs[r][0]+1 && pairs[r+1][1] === pairs[r][1]+1) r++;
+    const run = pairs.slice(q, r+1);
+    const strong = run.some(([ia, jb]) => isContent(B[jb]) && simW(A[ia], B[jb]) >= 2);
+    if((run.length >= 2 && strong) || run.length >= 3 || (run.length === 1 && B[run[0][1]].k.length >= 7 && simW(A[run[0][0]], B[run[0][1]]) === 3)) out.push(...run);
+    q = r + 1;
+  }
+  return out;
+}
+function dropOutliers(A, words, V){ // an anchor far away from what its neighbours predict is probably a false match
+  const C = cumSyl(words);
+  for(let pass = 0; pass < 2; pass++){
+    const keep = A.map(() => true);
+    for(let q = 1; q < A.length - 1; q++){
+      const a = A[q-1], b = A[q+1], c = A[q];
+      const f = (C[c.i]-C[a.i]) / Math.max(1e-6, C[b.i]-C[a.i]);
+      const pred = V.Tstart(V.S(a.t) + f*(V.S(b.t) - V.S(a.t)));
+      if(Math.abs(pred - c.t) > 4 && b.t - a.t < 90) keep[q] = false;
+    }
+    A = A.filter((_, q) => keep[q]);
+  }
+  return A;
+}
+function cleanAnchors(anchors, words, V){
+  anchors.sort((a,b) => a.i - b.i || a.t - b.t);
+  // longest increasing subsequence on time
+  const n = anchors.length, tails = [], prev = new Int32Array(n).fill(-1), tailIdx = [];
+  for(let q=0;q<n;q++){
+    let lo=0, hi=tails.length; while(lo<hi){ const mid=(lo+hi)>>1; if(tails[mid] <= anchors[q].t) lo=mid+1; else hi=mid; }
+    tails[lo] = anchors[q].t; tailIdx[lo] = q; prev[q] = lo>0 ? tailIdx[lo-1] : -1;
+  }
+  let res = []; for(let q = tailIdx[tails.length-1]; q !== undefined && q >= 0; q = prev[q]) res.push(anchors[q]);
+  res.reverse();
+  // one anchor per word index, plausible speaking rate
+  const C = cumSyl(words), out = [];
+  for(const a of res){
+    const L = out[out.length-1];
+    if(L && a.i === L.i) continue;
+    if(L){ const ds = V.S(a.t) - V.S(L.t), sy = C[a.i] - C[L.i]; if(ds > 1 && (sy/ds < 1 || sy/ds > 14)) continue; }
+    out.push(a);
+  }
+  return dropOutliers(out, words, V);
+}
+function cumSyl(words){ const C = new Float64Array(words.length+1); for(let i=0;i<words.length;i++) C[i+1] = C[i] + words[i].syl; return C; }
+function mapWords(words, anchors, V){
+  const N = words.length, C = cumSyl(words);
+  const A = anchors.filter(a => a.i > 0 && a.i < N && a.t > V.first && a.t < V.last);
+  A.unshift({i:0, t:V.first}); A.push({i:N, t:V.last});
+  const starts = new Float64Array(N+1); let p = 0;
+  for(let i=0; i<=N; i++){
+    while(p < A.length-2 && A[p+1].i <= i) p++;
+    const a = A[p], b = A[p+1];
+    if(i === a.i && a !== A[0]){ starts[i] = a.t; continue; }
+    const f = (C[i]-C[a.i]) / Math.max(1e-6, C[b.i]-C[a.i]);
+    const sa = V.S(a.t), sb = V.S(b.t);
+    starts[i] = V.Tstart(sa + f*(sb - sa));
+  }
+  for(let i=1;i<=N;i++) if(starts[i] < starts[i-1]) starts[i] = starts[i-1];
+  return starts;
+}
+function buildSentences(parsed, starts, V){
+  const {sents, words} = parsed, out = []; let wi = 0;
+  const bound = new Map(); // word index at a sentence boundary → nearby pause
+  { let w=0; sents.forEach((s, si) => { const f=w; while(w < words.length && words[w].si === si) w++; if(f>0 && w>f){ const P = V.nearPause(starts[f], 1.4); if(P) bound.set(f, P); } }); }
+  sents.forEach((s, si) => {
+    const first = wi; while(wi < words.length && words[wi].si === si) wi++;
+    if(wi === first) return;
+    const Ps = bound.get(first), Pe = bound.get(wi);
+    let st = Ps ? Ps[1] : V.snapStart(starts[first]);
+    let en = Pe ? Pe[0] : V.snapEnd(V.Tend(V.S(starts[wi])));
+    if(en < st + 0.4) en = Math.max(starts[wi], st + 0.4);
+    const wt = []; for(let q=first; q<wi; q++) wt.push(+starts[q].toFixed(2));
+    out.push({s: Math.max(0, st - 0.08), e: en + 0.15, t: words.slice(first, wi).map(w=>w.w).join(' '), wt, w0:first, w1:wi});
+  });
+  for(let q=1;q<out.length;q++) if(out[q].s < out[q-1].e - 0.25) out[q].s = out[q-1].e - 0.25;
+  return out;
+}
+async function alignUserText(text, pcm, mode, onProgress, shouldStop, resume, onCheckpoint){
+  const V = vad(pcm), parsed = parseUserText(text), words = parsed.words;
+  if(words.length < 3) throw new Error('Zu wenig Text.');
+  let anchors = [], altBySent = null, info = '';
+  if(mode === 'whisper' && cur.whisperSegs && cur.whisperSegs.length){
+    const A = wordsFromSegs(cur.whisperSegs, V), pairs = nwAlign(A, words);
+    const good = reliablePairs(pairs, A, words);
+    anchors = good.map(([ia, ib]) => ({i: ib, t: A[ia].t}));
+    // whisper words shown under each of your sentences
+    const segOfA = new Int32Array(A.length).fill(-1); pairs.forEach(([ia,ib]) => segOfA[ia] = words[ib].si);
+    let last = 0; for(let q=0;q<A.length;q++){ if(segOfA[q] >= 0) last = segOfA[q]; else segOfA[q] = last; }
+    altBySent = new Array(parsed.sents.length).fill(''); A.forEach((w,q) => { const s = segOfA[q]; altBySent[s] = altBySent[s] ? altBySent[s] + ' ' + w.w : w.w; });
+    info = `${anchors.length} Ankerwörter aus Whisper`;
+  } else if(mode === 'ai'){
+    const total = pcm.length/16000, step = Math.min(45, Math.max(18, total/100)), winLen = 12;
+    let k = 0; const nWin = Math.max(1, Math.floor((V.last - V.first) / step));
+    const startK = (resume && resume.k) || 0; if(resume && resume.anchors) anchors = resume.anchors.slice();
+    for(let c = V.first + Math.min(step/2, 8); c < V.last - 3 && !shouldStop(); c += step, k++){
+      if(k < startK) continue;
+      if(onCheckpoint && k > startK && (k - startK) % 3 === 0) await onCheckpoint({k, anchors});
+      let w0 = V.Tstart(V.S(c)); if(w0 > c + 6) w0 = c;
+      let w1 = V.Tend(V.S(w0) + winLen); if(w1 - w0 > 26) w1 = w0 + 26; if(w1 - w0 < 4) continue;
+      onProgress(k / nWin, `Ankerpunkt ${k+1} von ${nWin} (${fmt(w0)})`);
+      const chunk = pcm.slice(Math.floor(w0*16000), Math.floor(w1*16000));
+      const r = await workerCall({type:'run', id:'a'+k, audio:chunk, prompt: buildPrompt()}, [chunk.buffer]);
+      const segs0 = (r.out.chunks||[]).map(ch => ({s: w0 + (ch.timestamp[0] ?? 0), e: w0 + (ch.timestamp[1] ?? (w1-w0)), t: ch.text}));
+      const A = wordsFromSegs(segs0, V); if(A.length < 3) continue;
+      const est = mapWords(words, cleanAnchors(anchors.slice(), words, V), V);
+      const lastA = anchors.length ? Math.max(...anchors.map(a=>a.t)) : 0;
+      const R = 25 + 0.12 * Math.max(0, w0 - lastA);
+      let lo = 0; while(lo < words.length && est[lo] < w0 - R) lo++;
+      let hi = lo; while(hi < words.length && est[hi] < w1 + R) hi++;
+      if(hi - lo < 3){ lo = Math.max(0, lo-150); hi = Math.min(words.length, hi+150); }
+      const {score, pairs} = swAlign(A, words.slice(lo, hi));
+      if(pairs.length >= 3 && score >= 7) reliablePairs(pairs, A, words.slice(lo, hi)).forEach(([ia, jb]) => anchors.push({i: lo + jb, t: A[ia].t}));
+    }
+    if(shouldStop()) return {stopped: true, state: {k, anchors}};
+    info = `${anchors.length} Ankerwörter aus ${k} Hörproben`;
+  } else info = 'nach Sprechpausen';
+  const clean = cleanAnchors(anchors, words, V);
+  const starts = mapWords(words, clean, V);
+  const out = buildSentences(parsed, starts, V);
+  const seq = t => String(t).split(/\s+/).map(normW).filter(Boolean).join(' ');
+  if(altBySent) out.forEach(g => { const si = words[g.w0].si; if(altBySent[si] && seq(altBySent[si]) !== seq(g.t)) { g.alt = altBySent[si]; g.al = 'Whisper'; } });
+  out.forEach(g => { delete g.w0; delete g.w1; });
+  return {segs: out, info, anchors: clean.length};
+}
+
+/* =========================================================
+   STRUCTURES (Strukturen) — found in your own meetings
+   ========================================================= */
+const IRREG = {nehmen:'nehme nimmst nimmt nehmen nehmt nahm nahmen', weisen:'weise weist weisen wies wiesen', halten:'halte hältst hält halten haltet hielt hielten', schließen:'schließe schließt schließen schloss schlossen', treten:'trete trittst tritt treten tretet trat traten', geben:'gebe gibst gibt geben gebt gab gaben', rufen:'rufe rufst ruft rufen rief riefen', weichen:'weiche weichst weicht weichen wich wichen', fangen:'fange fängst fängt fangen fangt fing fingen', kommen:'komme kommst kommt kommen kommt kam kamen', schlagen:'schlage schlägst schlägt schlagen schlug schlugen', fallen:'falle fällst fällt fallen fiel fielen', sehen:'sehe siehst sieht sehen seht sah sahen', gehen:'gehe gehst geht gehen ging gingen', finden:'finde findest findet finden fand fanden', hängen:'hänge hängst hängt hängen hing hingen', schreiben:'schreibe schreibst schreibt schreiben schrieb schrieben', tragen:'trage trägst trägt tragen trug trugen', sprechen:'spreche sprichst spricht sprechen sprach sprachen', laden:'lade lädst lädt laden lud luden', stehen:'stehe stehst steht stehen stand standen', ziehen:'ziehe ziehst zieht ziehen zog zogen', bringen:'bringe bringst bringt bringen brachte brachten', lassen:'lasse lässt lassen ließ ließen'};
+function finiteForms(inf){
+  if(IRREG[inf]) return IRREG[inf].split(' ');
+  if(/(er|el)n$/.test(inf)){ const st = inf.slice(0,-1); return [st+'e', st+'st', st+'t', st+'n', st+'te', st+'ten']; }
+  const st = inf.replace(/e?n$/, ''), e = /([td]|[^aeioulrh][mn])$/.test(st) ? 'e' : '';
+  return [st, st+'e', /[sßzx]$/.test(st) ? st+'t' : st+e+'st', st+e+'t', st+'en', st+e+'te', st+e+'ten'];
+}
+const SEP_LIST = 'fest|stellen fest|legen ab|stimmen durch|führen aus|werten an|legen ein|halten nach|weisen aus|schleusen ein|stellen um|stellen aus|sortieren um|setzen ab|schließen sicher|stellen zurück|stellen vor|bereiten dar|stellen vor|stellen auf|nehmen nach|arbeiten an|passen ab|rufen überein|stimmen auf|treten zurück|führen ab|stellen frei|geben an|fordern ab|weichen aus|wirken an|fangen auf|hören an|rufen zurück|kommen zusammen|fassen vor|schlagen aus|fallen an|schauen an|sehen nach|fragen mit|teilen ein|setzen aus|tauschen ab|holen ein|bauen aus|bauen auf|bauen weiter|machen vorbei|kommen los|gehen statt|finden teil|nehmen zu|stimmen hin|weisen ab|geben an|geben aus|gehen ab|hängen an|kommen auf|schreiben ein|tragen nach|schauen vor|gehen zu|ordnen aus|schließen ab|sprechen auf|teilen an|melden ab|melden zurück|melden ein|planen hoch|laden herunter|laden auf|laden fest|halten mit|bringen weiter|leiten ein|leiten nach|ziehen vor|ziehen ab|ziehen'.split(' ').map(x => { const [p, b] = x.split('|'); return {p, b, inf: p + b}; });
+const SEP_BY_PREFIX = new Map(); const FORMS = new Map();
+SEP_LIST.forEach(o => { if(!SEP_BY_PREFIX.has(o.p)) SEP_BY_PREFIX.set(o.p, []); SEP_BY_PREFIX.get(o.p).push(o); if(!FORMS.has(o.b)) FORMS.set(o.b, new Set(finiteForms(o.b))); });
+const SUBJ = new Set('dass weil wenn ob obwohl damit nachdem bevor sodass falls sobald während seitdem solange bis'.split(' '));
+const MODAL = new Set('muss musst müssen müsst musste mussten soll sollst sollen sollt sollte sollten kann kannst können könnt konnte konnten könnte könnten darf darfst dürfen dürft durfte dürfte will willst wollen wollt wollte wollten möchte möchtest möchten'.split(' '));
+const WERD = new Set('werde wirst wird werden werdet wurde wurdest wurden worden'.split(' '));
+const AUX = new Set('habe hast hat haben habt hatte hatten bin bist ist sind seid war waren'.split(' '));
+const PART = /^(?:[a-zäöü]*ge[a-zäöüß]{2,}(?:t|en)|(?:be|er|ver|ent|über|zer|miss|emp)[a-zäöüß]{2,}t|[a-zäöüß]{3,}iert)$/;
+const BAUSTEINE = [
+  ['Wir haben festgestellt, dass …', 'تشخیص دادیم که … (گزارش یافته)', /\bfestgestellt\b|\bstell\w*\b[^.,]*\bfest\b/i],
+  ['Wir vermuten, dass …', 'حدس می‌زنیم که …', /\bvermute[nt]?\b|\bvermutlich\b/i],
+  ['Die Ursache liegt an / in …', 'علت … است', /\bursache\b[^.]*\blieg/i],
+  ['… ist auf … zurückzuführen', 'ناشی از … است', /zurückzuführen|zurückgeführt/i],
+  ['… führt zu …', '… منجر به … می‌شود', /\bführ(?:t|en|te)\b[^.]*?\bzu[mr]?\b/i],
+  ['Als Maßnahme …', 'به‌عنوان اقدام …', /\bals maßnahme\b/i],
+  ['… soll verhindern, dass …', 'باید مانع … شود', /\bverhinder\w*/i],
+  ['Das müssen wir noch klären', 'این را هنوز باید روشن کنیم', /\bklären\b|\bgeklärt\b/i],
+  ['Ich stimme das mit … ab', 'با … هماهنگ می‌کنم', /\babstimm\w*|\babgestimmt\b|\bstimm\w*\b[^.,]*\bab\b/i],
+  ['Danach entscheiden wir …', 'بعد تصمیم می‌گیریم …', /\bentscheid\w*/i],
+  ['Im Vergleich zu(r) …', 'در مقایسه با …', /\bim vergleich\b/i],
+  ['… steigt / sinkt von … auf …', 'افزایش / کاهش از … به …', /\b(?:steigt|sinkt|gestiegen|gesunken|stieg|sank)\b/i],
+  ['… bleibt stabil', 'ثابت می‌ماند', /\bstabil\b/i],
+  ['Der häufigste Fehler war …', 'بیشترین خطا … بود', /\bhäufigste\w*/i],
+  ['Das entspricht … Prozent', 'معادل … درصد است', /\bentspricht\b|\bentsprechen\b/i],
+  ['Bis wann …?', 'تا کی …؟', /\bbis wann\b/i],
+  ['Kannst du … übernehmen?', 'می‌توانی … را بر عهده بگیری؟', /\bübernehm\w*|\bübernommen\b/i],
+  ['Bitte achtet auf …', 'لطفاً به … توجه کنید', /\bachte[tn]?\b[^.]*\bauf\b/i],
+  ['Habe ich das richtig verstanden?', 'درست فهمیدم؟', /\brichtig verstanden\b/i],
+  ['Ich fasse kurz zusammen', 'خلاصه می‌کنم', /\bzusammenfass\w*|\bfasse\b[^.]*\bzusammen\b/i],
+  ['Ich komme darauf zurück', 'بعداً به این موضوع برمی‌گردم', /\bdarauf zurück\b/i],
+  ['Was genau meinst du mit …?', 'دقیقاً منظورت از … چیست؟', /\bmeinst du\b|\bwas meinst\b/i],
+  ['Wir gehen davon aus, dass …', 'فرض ما این است که …', /\bdavon aus\b/i],
+  ['… können wir ausschließen', '… را می‌توانیم منتفی بدانیم', /\bausschließen\b|\bausgeschlossen\b/i],
+  ['Status: abgeschlossen / in Bearbeitung / offen', 'وضعیت کار: تمام / در حال انجام / باز', /\b(?:abgeschlossen|in bearbeitung|noch offen|zurückgestellt|freigegeben|gesperrt)\b/i],
+  ['zuerst → danach → anschließend → zum Schluss', 'ترتیب مراحل یک فرایند', /\b(?:zuerst|danach|anschließend|zum schluss)\b/i],
+];
+const NVV = [
+  ['eine Abweichung feststellen', /abweichung/i, /festgestellt|feststell|\bstell\w*\b[^.]*\bfest\b/i],
+  ['die Kriterien festlegen / erfüllen', /kriteri/i, /festleg|festgelegt|\bleg\w*\b[^.]*\bfest\b|erfüll/i],
+  ['einen Test durchführen', /test/i, /durchführ|durchgeführt|\bführ\w*\b[^.]*\bdurch\b/i],
+  ['die Daten auswerten', /daten/i, /auswert|ausgewertet|\bwert\w*\b[^.]*\baus\b/i],
+  ['die Norm / Grenzwerte einhalten', /norm|grenzwert/i, /einhalt|eingehalten|\bhält\b[^.]*\bein\b|\bhalten\b[^.]*\bein\b/i],
+  ['eine Maßnahme umsetzen', /maßnahme/i, /umsetz|umgesetzt|\bsetz\w*\b[^.]*\bum\b/i],
+  ['die Ursache abstellen', /ursache/i, /abstell|abgestellt|\bstell\w*\b[^.]*\bab\b/i],
+  ['den Fehlercode erfassen', /fehlercode/i, /erfass/i],
+  ['das Modul ausschleusen', /modul/i, /ausschleus|ausgeschleust|\bschleus\w*\b[^.]*\baus\b/i],
+  ['den Termin verschieben', /termin/i, /verschieb|verschob/i],
+  ['die Charge freigeben', /charge|modul|freigabe/i, /freigeb|freigegeben|\bgib\w*\b[^.]*\bfrei\b|\bgeben\b[^.]*\bfrei\b/i],
+  ['zur Verfügung stellen', /zur verfügung/i],
+  ['in Betrieb nehmen', /in betrieb/i],
+  ['Bescheid geben / sagen', /bescheid/i],
+  ['eine Entscheidung treffen', /entscheidung/i, /treffen|getroffen|trifft/i],
+  ['in Frage kommen', /in frage/i],
+  ['im Blick behalten', /im blick/i],
+  ['auf dem Laufenden halten', /auf dem laufenden/i],
+  ['Rücksprache halten', /rücksprache/i],
+  ['in Auftrag geben', /in auftrag/i],
+  ['eine Rolle spielen', /\brolle\b/i, /spiel/i],
+  ['in Ordnung', /in ordnung/i],
+];
+const PRAEP = [
+  ['sich kümmern um', /kümmer/i, /\bum\b|\bdarum\b/i], ['achten auf', /\bachte/i, /\bauf\b|\bdarauf\b/i], ['abhängen von', /abhäng|\bhängt\b/i, /\bvon\b|\bdavon\b/i],
+  ['sich melden bei', /\bmelde/i, /\bbei\b|\bbeim\b/i], ['warten auf', /\bwarte/i, /\bauf\b|\bdarauf\b/i], ['sprechen über', /\bsprech|\bsprich|\bsprach/i, /\büber\b|\bdarüber\b/i],
+  ['gehören zu', /gehör/i, /\bzu[mr]?\b|\bdazu\b/i], ['sorgen für', /\bsorg/i, /\bfür\b|\bdafür\b/i], ['sich einigen auf', /\beinig/i, /\bauf\b|\bdarauf\b/i],
+  ['arbeiten an', /\barbeite/i, /\ban\b|\bam\b|\bdaran\b/i], ['fragen nach', /\bfrag/i, /\bnach\b|\bdanach\b/i], ['sich beschäftigen mit', /beschäftig/i, /\bmit\b|\bdamit\b/i],
+  ['rechnen mit', /\brechne/i, /\bmit\b|\bdamit\b/i], ['bestehen aus', /\bbesteh|\bbestand/i, /\baus\b|\bdaraus\b/i], ['liegen an', /\blieg/i, /\ban\b|\bam\b|\bdaran\b/i],
+  ['sich handeln um', /\bhandelt/i, /\bum\b/i], ['sich beziehen auf', /bezieh|bezog/i, /\bauf\b|\bdarauf\b/i], ['hinweisen auf', /hinweis|\bweist\b/i, /\bauf\b|\bdarauf\b/i],
+  ['beginnen mit', /beginn/i, /\bmit\b|\bdamit\b/i], ['sich verlassen auf', /verlass/i, /\bauf\b|\bdarauf\b/i], ['informieren über', /informier/i, /\büber\b|\bdarüber\b/i],
+  ['sich entscheiden für', /entscheid/i, /\bfür\b|\bdafür\b/i], ['teilnehmen an', /teilnehm|\bteil\b/i, /\ban\b|\bam\b/i], ['denken an', /\bdenk/i, /\ban\b|\bdaran\b/i],
+];
+const ST_CATS = [
+  {id:'bau', name:'Satzbausteine', fa:'الگوهای جملهٔ جلسه از جزوهٔ Meeting-Deutsch خودت — این‌ها را حفظ کن، نه کلمهٔ تنها را.'},
+  {id:'sep', name:'Satzklammer', fa:'فعل جداشدنی: پیشوند به آخر جمله می‌رود. تا آخر جمله گوش بده — معنی آنجا کامل می‌شود.'},
+  {id:'sub', name:'Nebensatz', fa:'بعد از dass / weil / wenn / ob / obwohl / damit / nachdem … فعل صرف‌شده به آخر جمله می‌رود.'},
+  {id:'mod', name:'Modalverb', fa:'müssen / sollen / können … در جایگاه دوم، فعل اصلی به صورت مصدر آخر جمله.'},
+  {id:'pas', name:'Passiv', fa:'werden + Partizip II: مهم است چه اتفاقی افتاده، نه چه کسی. در گزارش کیفیت خیلی رایج است.'},
+  {id:'per', name:'Perfekt', fa:'haben / sein + Partizip II در آخر جمله: برای گزارش کارهای انجام‌شده در جلسه.'},
+  {id:'nvv', name:'Feste Verbindungen', fa:'اسم + فعل که همیشه با هم می‌آیند. این‌ها را یکجا یاد بگیر.'},
+  {id:'pra', name:'Verb + Präposition', fa:'فعل‌هایی که حرف اضافهٔ ثابت دارند. حرف اضافه را همراه فعل حفظ کن.'},
+];
+function tokPos(text){ const out=[]; const re=/[\p{L}\p{N}][\p{L}\p{N}'’\-]*/gu; let m; while((m=re.exec(text))) out.push({w:m[0], k:m[0].toLowerCase(), a:m.index, b:m.index+m[0].length}); return out; }
+function clauseRanges(text){ const res=[]; let st=0; const re=/[,;:.!?–—]+/g; let m; while((m=re.exec(text))){ if(m.index>st) res.push([st, m.index]); st=m.index+m[0].length; } if(st<text.length) res.push([st, text.length]); return res; }
+const isLower = w => /^\p{Ll}/u.test(w);
+function findStructures(text){
+  const hits = [], toks = tokPos(text), cls = clauseRanges(text);
+  const add = (cat, label, fa, marks) => hits.push({cat, label, fa, marks});
+  const rx = (re, str=text, off=0) => { const m = re.exec(str); return m ? [off+m.index, off+m.index+m[0].length] : null; };
+  for(const [a,b] of cls){
+    const ct = toks.filter(t => t.a>=a && t.b<=b); if(ct.length < 2) continue;
+    const last = ct[ct.length-1], sub = text.slice(a,b);
+    const cand = SEP_BY_PREFIX.get(last.k);
+    if(cand) for(const o of cand){ const v = ct.slice(0,-1).find(t => FORMS.get(o.b).has(t.k)); if(v){ add('sep', o.inf, '', [[v.a,v.b],[last.a,last.b]]); break; } }
+    const si = ct.findIndex(t => SUBJ.has(t.k));
+    if(si >= 0 && ct.length - si >= 3 && isLower(last.w) && !SUBJ.has(last.k) && !(ct[si].k==='bis' && ct.length - si < 4)) add('sub', ct[si].k + ' … Verb am Ende', '', [[ct[si].a,ct[si].b],[last.a,last.b]]);
+    const mi = ct.findIndex(t => MODAL.has(t.k));
+    if(mi >= 0 && mi < ct.length-1 && isLower(last.w) && /(?:en|ern|eln)$/.test(last.k) && !MODAL.has(last.k) && !WERD.has(last.k) && !PART.test(last.k)) add('mod', ct[mi].k.replace(/^(muss|musst|müsst|musste|mussten)$/,'müssen') + ' + Infinitiv', '', [[ct[mi].a,ct[mi].b],[last.a,last.b]]);
+    const wi = ct.findIndex(t => WERD.has(t.k));
+    if(wi >= 0){ const p = ct.slice(wi+1).find(t => isLower(t.w) && PART.test(t.k)); if(p) add('pas', 'werden + Partizip II', '', [[ct[wi].a,ct[wi].b],[p.a,p.b]]); }
+    const hi = ct.findIndex(t => AUX.has(t.k));
+    if(hi >= 0 && hi < ct.length-1 && isLower(last.w) && PART.test(last.k)) add('per', (/^(bin|bist|ist|sind|seid|war|waren)$/.test(ct[hi].k) ? 'sein' : 'haben') + ' + Partizip II', '', [[ct[hi].a,ct[hi].b],[last.a,last.b]]);
+    for(const [label, r1, r2] of PRAEP){ const m1 = rx(new RegExp(r1.source,'i'), sub, a), m2 = rx(new RegExp(r2.source,'i'), sub, a); if(m1 && m2) add('pra', label, '', [m1, m2]); }
+  }
+  for(const [label, fa, re] of BAUSTEINE){ const m = rx(new RegExp(re.source,'i')); if(m) add('bau', label, fa, [m]); }
+  for(const [label, r1, r2] of NVV){ const m1 = rx(new RegExp(r1.source,'i')), m2 = r2 ? rx(new RegExp(r2.source,'i')) : null; if(m1 && (!r2 || m2)) add('nvv', label, '', r2 ? [m1, m2] : [m1]); }
+  return hits;
+}
+
+/* ---------- migrate data from the previous app version (Fachwörter in localStorage 'ht-gloss') ---------- */
+const OLD_DEFAULT_KEYS = new Set(["8d", "abwertung", "andon", "anschlussdose", "aoi", "ausschuss", "blasenansammlung", "blasencluster", "busbar", "bussbar", "cubici", "cutape", "dampheat", "dashboard", "delamination", "dh1000", "downgrading", "eca", "ecaoverflow", "ecatape", "edgetape", "einbettmaterial", "elbild", "elbilder", "elektrolumineszenz", "elfinal", "eloxalschicht", "elpre", "encapsulant", "epe", "epetape", "eva", "fehlerbild", "fehlercode", "fehlerkatalog", "fehlerquote", "feuchtewärmetest", "fingerabdrücke", "flasher", "fma", "freigabe", "fremdkörper", "füllfaktor", "gehrung", "gehrungsspalt", "glasbruch", "glaskante", "glaskratzer", "grenzwert", "heatmap", "helligkeitsunterschiede", "hipot", "hohlräume", "hotspot", "iec61215", "iec61730", "impp", "inhomogenität", "isc", "ivkennlinie", "ivkurve", "jbox", "kabelzugentlastung", "kantenband", "kantentrimmen", "kontaktfehler", "kontaktfinger", "kontaktierung", "kurzschluss", "laminat", "laminatinspektion", "lamination", "laminatkante", "laminatlabel", "laminator", "laminatverbund", "laminieren", "layup", "leistungsklasse", "leistungsmessung", "leistungsverlust", "lötstelle", "matrixverschaltung", "mes", "mikroriss", "mikrorisse", "modulinspektion", "modulkontrolle", "morgenmeeting", "nacharbeit", "oee", "opessolarmobility", "osm460", "pareto", "pmax", "poe", "polarität", "potting", "powerbi", "preel", "qrcodelabel", "rahmenecke", "rahmenecken", "rahmenkante", "rahmenprofil", "rahmenteil", "rework", "ribbon", "rsh", "rückverfolgbarkeit", "seriennummer", "shunt", "sichtprüfung", "silberleitbahnen", "silikondichtung", "silikonnaht", "silikonrückstände", "silikonüberstand", "spezifikation", "stc", "stillstandszeit", "stringer", "stückzahl", "taktzeit", "temperaturwechseltest", "thermalcycling", "traveler", "vergussmasse", "verschmutzung", "verunreinigung", "vipv", "vmpp", "voc", "voqi004vi", "voqi009vi", "voqi010vi", "wabenstruktur", "zellbruch", "zellbrüche", "zellfragment", "zellfragmente", "zellkante", "zellmatrix", "zellmatrixkante", "zellrandausbrüche", "zugentlastung", "zykluszeit", "übergangswiderstand"]);
+const OLD_DEFAULT_RULES = new Set(["i v kurve => IV-Kurve", "e l bild => EL-Bild", "e l bilder => EL-Bilder", "j box => J-Box"]);
+async function migrateOldGloss(){
+  let old = null; try{ old = JSON.parse(localStorage.getItem('ht-gloss')||'null'); }catch(e){}
+  if(!old || localStorage.getItem('ht-gloss-migrated')) return;
+  let n = 0;
+  for(const t of String(old.terms||'').split('\n').map(x=>x.trim()).filter(x=>x && !x.startsWith('#'))){
+    const k = normW(t); if(!k || OLD_DEFAULT_KEYS.has(k) || GL.some(e=>e.k===k)) continue;
+    await DB.put('gloss', {id:'u-'+uid(), term:t, fa:'', type: /^[a-zäöüß]+(en|ern|eln)$/.test(t) ? 'V' : 'N', prio:false, custom:true, added:Date.now()}); n++;
+  }
+  for(const l of String(old.rules||'').split('\n').map(x=>x.trim()).filter(x=>x.includes('=>') && !x.startsWith('#'))){
+    if(OLD_DEFAULT_RULES.has(l)) continue;
+    const [a,b] = l.split('=>').map(x=>x.trim()); if(!a || !b) continue;
+    await DB.put('gloss', {id:'r-'+uid(), term:b, from:a, fa:'', type:'R', prio:false, custom:true, added:Date.now()}); n++;
+  }
+  try{ localStorage.setItem('ht-gloss-migrated','1'); }catch(e){}
+  if(n){ GL = await DB.all('gloss'); buildGlossIndex(); }
+}
+
+/* =========================================================
+   UI: Fachwörter tab
+   ========================================================= */
+let gQuery = '';
+async function renderGlossTab(){
+  const el = $('#glossList');
+  const own = GL.filter(e => e.custom).length;
+  el.innerHTML = `
+    <p class="fa note" style="font-size:14px">لغت‌های تخصصی تو. Whisper موقع ساختن ترنسکریپت این‌ها را بهتر تشخیص می‌دهد و اشتباه‌های نزدیک را خودکار درست می‌کند (مثلاً Botting → Potting). اسم همکارها، ایستگاه‌ها و مشتری‌ها را هم اضافه کن — فقط روی همین دستگاه ذخیره می‌شود.</p>
+    <div class="gadd">
+      <input type="text" id="gT" placeholder="Fachwort, z. B. Laminator" autocapitalize="off" autocomplete="off">
+      <input type="text" id="gM" placeholder="Bedeutung (optional)" dir="auto" autocomplete="off">
+      <button class="primary" id="gA">Hinzufügen</button>
+    </div>
+    <div class="row" style="margin:10px 0">
+      <button class="secondary" id="gB">Liste einfügen</button>
+      <button class="secondary" id="gX">Als Excel-Datei (CSV)</button>
+      <span class="note">${GL.length} Wörter, davon ${own} eigene</span>
+    </div>
+    <input type="search" id="gS" placeholder="Suchen…" value="${esc(gQuery)}" class="search">
+    <div id="gI"></div>
+    <button class="linkbtn" id="gR" style="margin-top:14px">Standardliste (OPES) wiederherstellen</button>`;
+  const list = () => {
+    const q = normW(gQuery);
+    const items = GL.filter(e => !q || e.k.includes(q) || normW(e.from||'').includes(q) || (e.fa||'').includes(gQuery)).sort((a,b) => (b.custom - a.custom) || (b.added - a.added) || a.term.localeCompare(b.term, 'de'));
+    el.querySelector('#gI').innerHTML = items.slice(0, 400).map(e => `<div class="gitem" data-id="${esc(e.id)}"><div>${e.type==='R' ? `<span class="note">${esc(e.from)} →</span> ` : ''}<b>${esc(e.term)}</b>${e.type==='R' ? ' <span class="tag">gelernt</span>' : (e.custom ? ' <span class="tag">eigene</span>' : '')}${e.type==='V' ? ' <span class="tag">Verb</span>' : ''}<div class="fa">${esc(e.fa||'')}</div></div><button class="icon" data-del aria-label="Entfernen">✕</button></div>`).join('') || '<p class="note">Nichts gefunden.</p>';
+  };
+  list();
+  el.querySelector('#gS').oninput = e => { gQuery = e.target.value; list(); };
+  const addOne = async (term, fa) => { term = term.trim(); if(!term) return false; const k = normW(term); const ex = GL.find(e => e.k === k); const o = ex ? {...ex, fa: fa || ex.fa, custom: true, added: Date.now()} : {id:'u-'+uid(), term, fa: fa||'', type: /^[a-zäöüß]+(en|ern|eln)$/.test(term) ? 'V' : 'N', prio:false, custom:true, added:Date.now()}; delete o.k; delete o.ph; await DB.put('gloss', o); return true; };
+  el.querySelector('#gA').onclick = async () => { const t = el.querySelector('#gT').value, m = el.querySelector('#gM').value; if(await addOne(t, m.trim())){ await loadGloss(); renderGlossTab(); toast(`„${t.trim()}“ gespeichert.`); } };
+  el.querySelector('#gB').onclick = () => openSheet(`<h3>Liste einfügen</h3><p class="note">Ein Wort pro Zeile. Bedeutung optional nach „=“, z. B.<br><code>Laminator = دستگاه لمینیتور</code><br>Korrektur-Regel mit „=>“: <code>Botting => Potting</code></p><textarea id="gBt" rows="10" placeholder="Laminator = …&#10;Potting&#10;Zellverbinder"></textarea><button class="primary" id="gBgo" style="margin-top:12px">Alle hinzufügen</button>`, sh => {
+    sh.querySelector('#gBgo').onclick = async () => { let n = 0; for(const line of sh.querySelector('#gBt').value.split(/\n+/)){ if(line.includes('=>')){ const [a, b] = line.split('=>').map(x => x.trim()); if(a && b){ await DB.put('gloss', {id:'r-'+uid(), term:b, from:a, fa:'', type:'R', prio:false, custom:true, added:Date.now()}); n++; } continue; } const [t, ...m] = line.split(/\s*[=;\t]\s*/); if(t && t.trim().length > 1 && await addOne(t, m.join(' ').trim())) n++; } await loadGloss(); closeSheet(); renderGlossTab(); toast(`${n} Wörter hinzugefügt.`); };
+  });
+  el.querySelector('#gX').onclick = () => { const q = s => '"' + String(s??'').replace(/"/g,'""') + '"'; download('Fachwoerter.csv', '\ufeff' + [['Fachwort','Bedeutung','Art','Eigene']].concat(GL.map(e => [e.term, e.fa, e.type==='V'?'Verb':'Begriff', e.custom?'ja':''])).map(r => r.map(q).join(';')).join('\r\n'), 'text/csv;charset=utf-8'); };
+  el.querySelector('#gR').onclick = async () => { await seedGloss(); await loadGloss(); renderGlossTab(); toast('Standardliste wiederhergestellt. Eigene Wörter bleiben.'); };
+  el.querySelector('#gI').onclick = async e => { const b = e.target.closest('[data-del]'); if(!b) return; const id = b.closest('.gitem').dataset.id; await DB.del('gloss', id); await loadGloss(); list(); };
+}
+
+/* =========================================================
+   UI: Strukturen
+   ========================================================= */
+let stCat = 'bau', stGap = false, stRec = '';
+async function renderStructures(el, onlyRec){
+  const all = (await DB.all('recs')).filter(r => r.segments && r.segments.length);
+  const recs = all.filter(r => onlyRec ? r.id === onlyRec : (!stRec || r.id === stRec));
+  if(!recs.length){ el.innerHTML = `<div class="empty">Noch keine Transkripte. Erstelle oder gleiche zuerst ein Transkript ab — dann findet die App hier die wichtigen Strukturen aus <b>deinen</b> Meetings.<div class="fa" style="margin-top:8px">اول برای یک ویس ترنسکریپت بساز؛ بعد ساختارهای مهم جلسه‌های خودت اینجا جمع می‌شوند.</div></div>`; return; }
+  const items = new Map(), perCat = {};
+  for(const r of recs) r.segments.forEach(g => { for(const h of findStructures(g.t)){ const key = h.cat+'|'+h.label; let it = items.get(key); if(!it){ it = {cat:h.cat, label:h.label, fa:h.fa, n:0, ex:[], seen:new Set()}; items.set(key, it); } it.n++; perCat[h.cat] = (perCat[h.cat]||0) + 1; const sk = g.t.split(/\s+/).map(normW).join(' '); if(it.ex.length < 25 && !it.seen.has(sk)){ it.seen.add(sk); it.ex.push({rec:r.id, name:r.name, t:g.s, e:g.e, s:g.t, marks:h.marks}); } } });
+  const cat = ST_CATS.find(c => c.id === stCat) || ST_CATS[0];
+  const list = [...items.values()].filter(it => it.cat === cat.id).sort((a,b) => b.n - a.n);
+  el.innerHTML = `
+    ${onlyRec ? '' : `<select id="stR" class="sel"><option value="">Alle Aufnahmen (${all.length})</option>${all.map(r => `<option value="${r.id}" ${r.id===stRec?'selected':''}>${esc(r.name)}</option>`).join('')}</select>`}
+    <div class="stcats">${ST_CATS.map(c => `<button class="chip" data-cat="${c.id}" aria-pressed="${c.id===cat.id}">${c.name} <span class="cnt">${perCat[c.id]||0}</span></button>`).join('')}</div>
+    <div class="row" style="justify-content:space-between;margin:6px 0 4px"><p class="fa note" style="margin:0;flex:1">${cat.fa}</p><button class="chip" id="stG" aria-pressed="${stGap}">Lücken-Übung</button></div>
+    ${list.length ? list.map((it, q) => `<details class="st" ${q<2?'open':''}><summary><b>${esc(it.label)}</b> <span class="cnt">${it.n}×</span>${it.fa ? `<div class="fa note">${esc(it.fa)}</div>` : ''}</summary>
+      ${it.ex.map(x => `<div class="ex"><button class="icon play" data-rec="${x.rec}" data-t="${x.t}" data-e="${x.e}" aria-label="Anhören">▶︎</button><div><div class="exs">${markHTML(x.s, x.marks, stGap)}</div>${onlyRec ? '' : `<div class="note">${esc(x.name)} ${fmt(x.t)}</div>`}</div></div>`).join('')}
+      ${it.n > it.ex.length ? `<p class="note">${it.n}× gehört, ${it.ex.length} verschiedene Sätze</p>` : ''}</details>`).join('')
+      : `<p class="note">In ${onlyRec ? 'dieser Aufnahme' : 'diesen Aufnahmen'} wurde diese Struktur noch nicht gefunden.</p>`}`;
+  const sel = el.querySelector('#stR'); if(sel) sel.onchange = e => { stRec = e.target.value; renderStructures(el, onlyRec); };
+  el.querySelectorAll('[data-cat]').forEach(b => b.onclick = () => { stCat = b.dataset.cat; renderStructures(el, onlyRec); });
+  el.querySelector('#stG').onclick = () => { stGap = !stGap; renderStructures(el, onlyRec); };
+  el.onclick = async e => {
+    const g = e.target.closest('.gapw'); if(g){ g.outerHTML = `<mark>${esc(g.dataset.ans)}</mark>`; return; }
+    const p = e.target.closest('.play'); if(!p) return;
+    const id = p.dataset.rec, t = +p.dataset.t, en = +p.dataset.e;
+    if(!cur || cur.id !== id || $('#player').hidden){ closeSheet(); await openRec(id); await new Promise(r => setTimeout(r, 350)); }
+    playRange(t, en);
+  };
+}
+function markHTML(s, marks, gap){
+  const ms = marks.slice().sort((a,b) => a[0]-b[0]); let out = '', p = 0;
+  for(const [a,b] of ms){ if(a < p) continue; out += esc(s.slice(p,a)); const w = s.slice(a,b); out += gap ? `<button class="gapw" data-ans="${esc(w)}">${'_'.repeat(Math.max(3, Math.min(10, w.length)))}</button>` : `<mark>${esc(w)}</mark>`; p = b; }
+  return out + esc(s.slice(p));
+}
+let rangeStop = null;
+async function playRange(t, en){
+  if(shadow.on) setMode(false);
+  if(rangeStop) audio.removeEventListener('timeupdate', rangeStop);
+  audio.currentTime = Math.max(0, t - 0.05); await play();
+  rangeStop = () => { if(audio.currentTime >= en){ audio.pause(); audio.removeEventListener('timeupdate', rangeStop); rangeStop = null; } };
+  audio.addEventListener('timeupdate', rangeStop);
+}
+function openStructSheet(){
+  openSheet(`<h3>Strukturen in dieser Aufnahme</h3><div id="stSheet"></div>`, sh => renderStructures(sh.querySelector('#stSheet'), cur.id));
+}
+
+/* =========================================================
+   UI: align your own transcript
+   ========================================================= */
+function openAlignSheet(){
+  if(!cur) return;
+  const dur = cur.duration || audio.duration || 0;
+  const hasW = !!(cur.whisperSegs && cur.whisperSegs.length) || (segs.length && ['local','openai'].includes(cur.tSource));
+  const step = Math.min(45, Math.max(18, dur/100)), nWin = Math.max(1, Math.round(dur/step)), mins = Math.max(1, Math.round(nWin*2.5/60));
+  const useCloud = cloudReady() && !hasW, canResume = !!(cur.alignJob && cur.alignJob.key === textKey(cur.userText || ''));
+  openSheet(`
+    <h3>Eigenes Transkript abgleichen</h3>
+    <p class="note">Dein Text wird Wort für Wort mit der Aufnahme synchronisiert — Zeitangaben sind nicht nötig. Danach funktionieren Hervorhebung, Satz wiederholen und Shadowing mit <b>deinem</b> Text.</p>
+    <textarea id="ut" rows="7" placeholder="Transkript hier einsetzen (Sprachmemos, Teams, Word …)">${esc(cur.userText||'')}</textarea>
+    <div class="row" style="margin-top:8px"><button class="secondary" id="utFile">Aus Datei laden (.txt .srt .vtt)</button><span class="note" id="utCount"></span></div>
+    <input type="file" id="utIn" accept=".txt,.srt,.vtt,text/plain" hidden>
+    <h4>Methode</h4>
+    ${hasW ? `<label class="opt"><input type="radio" name="am" value="whisper" checked><span><b>Mit dem vorhandenen Whisper-Transkript</b><small>Sofort fertig und sehr genau. Der Whisper-Text bleibt als Vergleich unter jedem Satz.</small></span></label>` : ''}
+    ${useCloud ? `<label class="opt"><input type="radio" name="am" value="cloud" checked><span><b>Im Hintergrund (GitHub) – am genauesten</b><small>${cloudPending(cur) ? 'Läuft schon. Dein Text wird automatisch synchronisiert, sobald das Transkript da ist.' : 'Kurz hochladen, App schließen. Wenn das Transkript fertig ist, wird dein Text automatisch Wort für Wort synchronisiert.'}</small></span></label>` : ''}
+    <label class="opt"><input type="radio" name="am" value="ai" ${hasW||useCloud?'':'checked'}><span><b>Auf dem Gerät (KI-Hörproben)</b><small>Whisper hört etwa alle ${Math.round(step)} s kurz hinein (${nWin} Proben). App offen lassen; der Fortschritt wird gespeichert${canResume ? ` – <b>weiter ab Probe ${cur.alignJob.k + 1}</b>` : ''}.</small></span></label>
+    ${hasW ? '' : `<label class="opt"><input type="radio" name="am" value="full"><span><b>Am genauesten</b><small>Erst komplettes Whisper-Transkript, dann Abgleich. Dauert länger; der Whisper-Text bleibt als Vergleich.</small></span></label>`}
+    <div class="progress"><i id="pbar"></i></div><div class="note" id="pmsg">Bereit.</div>
+    <div class="row" style="margin-top:12px"><button class="primary" id="goTx" style="flex:1">${canResume ? 'Fortsetzen' : 'Abgleichen'}</button><button class="secondary" id="stopTx" hidden>Stopp</button></div>
+    <p class="note" style="margin-top:12px">App geöffnet und Bildschirm an lassen. Fachwörter aus deiner Liste helfen Whisper beim Erkennen.</p>`, sh => {
+    const ut = sh.querySelector('#ut'), cnt = () => { const n = ut.value.trim() ? ut.value.trim().split(/\s+/).length : 0; sh.querySelector('#utCount').textContent = n ? n + ' Wörter' : ''; };
+    ut.oninput = cnt; cnt();
+    sh.querySelector('#utFile').onclick = () => sh.querySelector('#utIn').click();
+    sh.querySelector('#utIn').onchange = async e => { const f = e.target.files[0]; if(f){ ut.value = await f.text(); cnt(); } };
+    sh.querySelector('#goTx').onclick = () => { const text = ut.value.trim(); if(text.split(/\s+/).length < 5){ toast('Bitte zuerst deinen Text einsetzen.'); return; } runAlign(text, sh.querySelector('input[name=am]:checked').value); };
+    sh.querySelector('#stopTx').onclick = () => { TX.stop = true; setP(null, 'Wird gestoppt…'); };
+  });
+}
+const textKey = t => { const s = String(t).replace(/\s+/g, ' ').trim(); let h = 5381; for(let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0; return (h >>> 0).toString(36) + ':' + s.length; };
+async function runAlign(text, mode){
+  if(TX.busy) return;
+  await persistSegs({userText: text});
+  if(mode === 'cloud'){
+    await persistSegs({needsAlign: true});
+    if(cloudPending(cur)){ setP(1, 'Gespeichert ✓ Sobald das Transkript da ist, wird dein Text automatisch synchronisiert. Du kannst die App schließen.'); return; }
+    await cloudSubmit(); return;
+  }
+  if(mode === 'full'){ runTranscription(true, async pcm => { await doAlign(text, 'whisper', pcm); }); return; }
+  if(!cur.whisperSegs || !cur.whisperSegs.length){ if(mode === 'whisper') cur.whisperSegs = segs.map(g => ({s:g.s, e:g.e, t:g.t})); }
+  TX.busy = true; TX.stop = false; setBusyUI(true);
+  try{ if(navigator.wakeLock) TX.wake = await navigator.wakeLock.request('screen'); }catch(e){}
+  try{
+    setP(0, 'Audio wird dekodiert…');
+    const a = await DB.get('audio', cur.id); const pcm = await decode16k(a.blob);
+    if(mode === 'ai') await ensureWorker('onnx-community/whisper-base');
+    await doAlign(text, mode, pcm);
+  }catch(err){ console.error(err); setP(null, 'Fehler: ' + (err.message||err)); if(TX.worker && /network|load/i.test(String(err.message))){ TX.worker.terminate(); TX.worker = null; TX.workerModel = null; } }
+  finally{ TX.busy = false; setBusyUI(false); try{ TX.wake && TX.wake.release(); }catch(e){} TX.wake = null; }
+}
+async function doAlign(text, mode, pcm){
+  const t0 = performance.now(), key = textKey(text);
+  const resume = mode === 'ai' && cur.alignJob && cur.alignJob.key === key ? cur.alignJob : null;
+  const r = await alignUserText(text, pcm, mode, (f, m) => setP(f, m), () => TX.stop, resume, async st => { cur.alignJob = {key, k: st.k, anchors: st.anchors}; await persistSegs({alignJob: cur.alignJob}); });
+  if(r.stopped){ cur.alignJob = {key, k: r.state.k, anchors: r.state.anchors}; await persistSegs({alignJob: cur.alignJob}); setP(null, 'Gestoppt. „Fortsetzen“ macht später an dieser Stelle weiter.'); return; }
+  segs = r.segs;
+  await persistSegs({tDone: cur.duration || pcm.length/16000, tSource:'aligned', whisperSegs: cur.whisperSegs || null, userText: text, alignJob: null, needsAlign: false});
+  renderTx();
+  setP(1, `Fertig in ${Math.max(1, Math.round((performance.now()-t0)/1000))} s: ${segs.length} Sätze, ${r.info}.`);
+  toast('Dein Text ist jetzt mit der Aufnahme synchron.', 3500);
+}
+
+
+/* =========================================================
+   CLOUD — transcription in the background (GitHub Actions, private repository)
+   ========================================================= */
+const CLOUD_WORKFLOW = "# Hören-Trainer · Transkription im Hintergrund · v1\n# Wird von der App automatisch eingerichtet – bitte nicht umbenennen.\nname: Transkription\non:\n  push:\n    branches: ['job-*']\npermissions:\n  contents: write\njobs:\n  transcribe:\n    runs-on: ubuntu-latest\n    timeout-minutes: 350\n    steps:\n      - name: Aufnahme holen\n        uses: actions/checkout@v4\n        with:\n          path: job\n      - name: Auftrag lesen\n        id: meta\n        run: |\n          echo \"id=$(jq -r '.id' job/inbox/job.json)\" >> \"$GITHUB_OUTPUT\"\n          echo \"model=$(jq -r '.model // \"small\"' job/inbox/job.json)\" >> \"$GITHUB_OUTPUT\"\n      - uses: actions/setup-python@v5\n        with:\n          python-version: '3.11'\n      - name: Modell aus dem Zwischenspeicher\n        uses: actions/cache@v4\n        with:\n          path: ~/.cache/huggingface\n          key: whisper-${{ steps.meta.outputs.model }}-v1\n      - name: Programme installieren\n        run: pip install --quiet faster-whisper==1.1.1\n      - name: Transkribieren\n        run: |\n          python - <<'PY'\n          import glob, inspect, json, os, time, traceback\n          job = json.load(open('job/inbox/job.json', encoding='utf-8'))\n          out = {'id': job['id'], 'name': job.get('name', ''), 'model': job.get('model') or 'small'}\n          t0 = time.time()\n          try:\n              from faster_whisper import WhisperModel\n              audio = sorted(glob.glob('job/inbox/audio.*'))[0]\n              model = WhisperModel(out['model'], device='cpu', compute_type='int8', cpu_threads=os.cpu_count() or 2)\n              kw = dict(language=job.get('language') or 'de', beam_size=5, vad_filter=True,\n                        vad_parameters=dict(min_silence_duration_ms=500), word_timestamps=True,\n                        condition_on_previous_text=False, initial_prompt=(job.get('prompt') or None))\n              if job.get('hotwords') and 'hotwords' in inspect.signature(model.transcribe).parameters:\n                  kw['hotwords'] = job['hotwords']\n              segments, info = model.transcribe(audio, **kw)\n              res = []\n              for s in segments:\n                  words = [[w.word.strip(), round(w.start, 2), round(w.end, 2)] for w in (s.words or []) if w.word.strip()]\n                  res.append({'s': round(s.start, 2), 'e': round(s.end, 2), 't': s.text.strip(), 'words': words})\n                  print(f'{s.start:8.1f}s  {s.text.strip()[:90]}', flush=True)\n              out.update(duration=round(info.duration, 2), language=info.language, segments=res)\n          except Exception as e:\n              traceback.print_exc()\n              out['error'] = f'{type(e).__name__}: {e}'[:500]\n          out['seconds'] = round(time.time() - t0)\n          os.makedirs('result', exist_ok=True)\n          with open(f\"result/{out['id']}.json\", 'w', encoding='utf-8') as f:\n              json.dump(out, f, ensure_ascii=False)\n          print('fertig in', out['seconds'], 's', ('| Fehler: ' + out['error']) if 'error' in out else '')\n          PY\n      - name: Ergebnis speichern\n        if: always()\n        env:\n          GH_TOKEN: ${{ github.token }}\n          JID: ${{ steps.meta.outputs.id }}\n          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}\n        run: |\n          [ -n \"$JID\" ] || { echo \"Kein Auftrag gefunden.\"; exit 0; }\n          mkdir -p result\n          if [ ! -f \"result/$JID.json\" ]; then\n            printf '{\"id\":\"%s\",\"error\":\"Fehler im GitHub-Workflow (Details unter Actions).\"}\\n' \"$JID\" > \"result/$JID.json\"\n          fi\n          git config --global user.name \"hoeren-trainer\"\n          git config --global user.email \"hoeren-trainer@users.noreply.github.com\"\n          URL=\"${REPO_URL:-https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git}\"\n          BR=\"${DEFAULT_BRANCH:-main}\"\n          for i in 1 2 3 4 5; do\n            rm -rf main-repo\n            if git clone --quiet --depth 1 --branch \"$BR\" \"$URL\" main-repo; then\n              mkdir -p main-repo/results\n              cp \"result/$JID.json\" main-repo/results/\n              if (cd main-repo && git add results && (git commit --quiet -m \"Ergebnis $JID\" || true) && git push --quiet origin \"$BR\"); then break; fi\n            fi\n            sleep $((i * 3))\n          done\n          (cd main-repo && git push --quiet origin --delete \"$GITHUB_REF_NAME\") || true\n";
+const ghTok = () => { try{ return localStorage.getItem('ht-gh-token') || ''; }catch(e){ return ''; } };
+const cloudCfg = () => S.cloud || {};
+const cloudReady = () => !!(cloudCfg().ok && cloudCfg().owner && cloudCfg().repo && ghTok());
+const cloudPending = r => !!(r && r.cloud && r.cloud.jobId && !r.cloud.done);
+const isPhone = () => Math.min(screen.width, screen.height) < 600 && /iPhone|Android/i.test(navigator.userAgent);
+async function gh(path, opts = {}){
+  return fetch('https://api.github.com' + path, {cache: 'no-store', ...opts, headers: {Accept: 'application/vnd.github+json', Authorization: 'Bearer ' + ghTok(), ...(opts.body ? {'Content-Type': 'application/json'} : {}), ...(opts.headers || {})}});
+}
+async function ghJson(path, opts){
+  const r = await gh(path, opts); let j = null; try{ j = await r.json(); }catch(e){}
+  if(!r.ok){ const e = new Error((j && j.message) || ('HTTP ' + r.status)); e.status = r.status; throw e; }
+  return j;
+}
+const b64utf8 = s => btoa(unescape(encodeURIComponent(s)));
+const unb64utf8 = s => decodeURIComponent(escape(atob(String(s).replace(/\s/g, ''))));
+const blobToB64 = blob => new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(String(fr.result).split(',')[1] || ''); fr.onerror = () => rej(fr.error); fr.readAsDataURL(blob); });
+function audioExt(blob, name){
+  const t = (blob.type || '').toLowerCase();
+  if(/mp4|m4a|aac/.test(t)) return 'm4a'; if(/mpeg|mp3/.test(t)) return 'mp3'; if(/wav/.test(t)) return 'wav'; if(/ogg|opus/.test(t)) return 'ogg'; if(/webm/.test(t)) return 'webm';
+  const m = String(name || '').match(/\.(m4a|mp3|wav|aac|ogg|opus|webm|mp4|caf|flac)$/i); return m ? m[1].toLowerCase() : 'm4a';
+}
+function cloudHotwords(){
+  const own = GL.filter(e => e.custom && e.type !== 'R').map(e => e.term), def = GL.filter(e => !e.custom && e.prio).map(e => e.term);
+  let s = ''; for(const t of [...new Set([...own, ...def])]){ if((s + ' ' + t).length > 300) break; s += (s ? ' ' : '') + t; } return s;
+}
+const minsAgo = t => Math.max(0, Math.round((Date.now() - t) / 60000));
+function cloudEta(c){
+  const d = (c.dur || 0) / 60, total = c.model === 'large-v3-turbo' ? d * 1.5 + 6 : d * 0.5 + 4, left = Math.round(total - (Date.now() - c.sent) / 60000);
+  return left > 1 ? `fertig in ca. ${left} Min. (Schätzung)` : 'sollte bald fertig sein';
+}
+function openCloudSetup(){
+  const c = cloudCfg(), owner0 = c.owner || (location.hostname.endsWith('.github.io') ? location.hostname.split('.')[0] : '');
+  openSheet(`
+    <h3>Im Hintergrund transkribieren</h3>
+    <p class="fa note" style="font-size:14px">ویس روی یک مخزن <b>خصوصی</b> در GitHub خودت آپلود می‌شود و سرورهای GitHub آن را ترنسکریپت می‌کنند. گوشی می‌تواند بسته یا خاموش باشد. رایگان است (تا ۲۰۰۰ دقیقه پردازش در ماه). فقط یک بار تنظیم می‌کنی:</p>
+    <ol class="note steps" dir="ltr">
+      <li>github.com → <b>+</b> → <b>New repository</b> → Name: <code>Listening-Daten</code> → <b>Private</b> → ✓ <b>Add a README file</b> → <b>Create repository</b></li>
+      <li>Profile picture → <b>Settings</b> → <b>Developer settings</b> → <b>Personal access tokens</b> → <b>Fine-grained tokens</b> → <b>Generate new token</b></li>
+      <li>Token name: <code>Hören-Trainer</code> · Expiration: 1 year · Repository access: <b>Only select repositories</b> → <code>Listening-Daten</code></li>
+      <li>Permissions: <b>Contents</b> → Read and write · <b>Workflows</b> → Read and write</li>
+      <li><b>Generate token</b> → Copy → unten bei „Token“ einfügen → „Verbinden und einrichten“</li>
+    </ol>
+    <label class="field"><span>GitHub-Benutzer</span><input id="ghO" value="${esc(owner0)}" autocapitalize="off" autocomplete="off" spellcheck="false"></label>
+    <label class="field"><span>Privates Repository</span><input id="ghR" value="${esc(c.repo || 'Listening-Daten')}" autocapitalize="off" autocomplete="off" spellcheck="false"></label>
+    <label class="field"><span>Token</span><input id="ghT" type="password" placeholder="github_pat_…" value="${esc(ghTok())}" autocomplete="off"></label>
+    <button class="primary" id="ghGo">Verbinden und einrichten</button>
+    <div class="note" id="ghMsg" style="margin-top:10px"></div>
+    <p class="note" style="margin-top:10px">Der Token bleibt nur auf diesem Gerät. Aufnahmen landen nur in deinem privaten Repository.</p>`, sh => {
+    sh.querySelector('#ghGo').onclick = async () => {
+      const msg = sh.querySelector('#ghMsg'), o = sh.querySelector('#ghO').value.trim(), rp = sh.querySelector('#ghR').value.trim(), tk = sh.querySelector('#ghT').value.trim();
+      if(!o || !rp || !tk){ msg.textContent = 'Bitte alle drei Felder ausfüllen.'; return; }
+      try{ localStorage.setItem('ht-gh-token', tk); }catch(e){}
+      msg.textContent = 'Verbinde…';
+      try{ msg.textContent = await cloudSetup(o, rp); toast('Hintergrund-Transkription ist eingerichtet ✓', 3000); setTimeout(closeSheet, 1500); }
+      catch(e){ msg.textContent = 'Fehler: ' + (e.message || e); }
+    };
+  });
+}
+async function cloudSetup(owner, repo){
+  let info;
+  try{ info = await ghJson(`/repos/${owner}/${repo}`); }
+  catch(e){ if(e.status === 401) throw new Error('Token ungültig oder abgelaufen.'); if(e.status === 404 || e.status === 403) throw new Error('Repository nicht gefunden. Name prüfen — und ob der Token Zugriff auf genau dieses Repository hat.'); throw e; }
+  if(!info.private) throw new Error('Dieses Repository ist öffentlich! Bitte ein privates verwenden – sonst wären deine Aufnahmen für alle sichtbar.');
+  const path = '.github/workflows/transcribe.yml'; let sha = null, same = false;
+  try{ const f = await ghJson(`/repos/${owner}/${repo}/contents/${path}`); sha = f.sha; same = unb64utf8(f.content || '') === CLOUD_WORKFLOW; }catch(e){ if(e.status !== 404) throw e; }
+  if(!same){
+    try{ await ghJson(`/repos/${owner}/${repo}/contents/${path}`, {method: 'PUT', body: JSON.stringify({message: 'Hören-Trainer: Transkription im Hintergrund', content: b64utf8(CLOUD_WORKFLOW), ...(sha ? {sha} : {})})}); }
+    catch(e){ if(e.status === 403 || e.status === 404) throw new Error('Der Token darf keine Workflows anlegen. Beim Token „Contents“ und „Workflows“ auf „Read and write“ stellen.'); throw e; }
+  }
+  S.cloud = {owner, repo, model: cloudCfg().model || 'small', ok: true, branch: info.default_branch || 'main'}; saveS();
+  return 'Verbunden ✓ Alles eingerichtet.';
+}
+async function cloudSubmit(){
+  if(!cloudReady()){ openCloudSetup(); return false; }
+  if(TX.busy) return false;
+  const {owner, repo} = cloudCfg(), br = cloudCfg().branch || 'main';
+  TX.busy = true; setBusyUI(true);
+  try{
+    setP(0.05, 'Wird vorbereitet…');
+    const a = await DB.get('audio', cur.id);
+    if(a.blob.size > 70e6) throw new Error('Datei zu groß für die Cloud (max. ca. 70 MB). Tipp: Aufnahme in Sprachmemos kürzen.');
+    const b64 = await blobToB64(a.blob);
+    const jobId = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    const job = {id: jobId, name: cur.name, model: cloudCfg().model || 'small', language: 'de', prompt: buildPrompt(), hotwords: S.useGloss ? cloudHotwords() : '', created: new Date().toISOString()};
+    setP(0.15, `Wird hochgeladen (${(a.blob.size / 1e6).toFixed(1)} MB) – bitte App kurz offen lassen…`);
+    const ref = await ghJson(`/repos/${owner}/${repo}/git/ref/heads/${br}`);
+    const base = await ghJson(`/repos/${owner}/${repo}/git/commits/${ref.object.sha}`);
+    const blob = await ghJson(`/repos/${owner}/${repo}/git/blobs`, {method: 'POST', body: '{"encoding":"base64","content":"' + b64 + '"}'});
+    setP(0.85, 'Auftrag wird angelegt…');
+    const tree = await ghJson(`/repos/${owner}/${repo}/git/trees`, {method: 'POST', body: JSON.stringify({base_tree: base.tree.sha, tree: [
+      {path: 'inbox/audio.' + audioExt(a.blob, cur.name), mode: '100644', type: 'blob', sha: blob.sha},
+      {path: 'inbox/job.json', mode: '100644', type: 'blob', content: JSON.stringify(job, null, 1)}]})});
+    const commit = await ghJson(`/repos/${owner}/${repo}/git/commits`, {method: 'POST', body: JSON.stringify({message: 'Transkription: ' + cur.name, tree: tree.sha, parents: [ref.object.sha]})});
+    await ghJson(`/repos/${owner}/${repo}/git/refs`, {method: 'POST', body: JSON.stringify({ref: 'refs/heads/job-' + jobId, sha: commit.sha})});
+    cur.cloud = {jobId, model: job.model, sent: Date.now(), dur: cur.duration || audio.duration || 0};
+    await persistSegs({cloud: cur.cloud});
+    setP(1, 'Hochgeladen ✓ Du kannst die App jetzt schließen – das Transkript erscheint automatisch (' + cloudEta(cur.cloud) + ').');
+    toast('Hochgeladen ✓ Die App darf jetzt zu.', 4000);
+    startCloudTimer();
+    if(!segs.length) renderTx();
+    return true;
+  }catch(e){
+    console.error(e);
+    setP(null, 'Fehler: ' + (e.status === 401 ? 'Token ungültig oder abgelaufen – unter „Cloud einrichten“ neu eingeben.' : (e.message || e)));
+    return false;
+  }finally{ TX.busy = false; setBusyUI(false); }
+}
+let cloudTimer = null;
+async function cloudPoll(manual){
+  if(!cloudReady()) return;
+  const {owner, repo} = cloudCfg();
+  const pend = (await DB.all('recs')).filter(cloudPending);
+  if(!pend.length){ if(manual) toast('Keine offenen Aufträge.'); return; }
+  let got = 0;
+  for(const r of pend){
+    try{
+      const res = await gh(`/repos/${owner}/${repo}/contents/results/${r.cloud.jobId}.json`, {headers: {Accept: 'application/vnd.github.raw+json'}});
+      if(!res.ok) continue;
+      await applyCloudResult(r, JSON.parse(await res.text())); got++;
+    }catch(e){ console.warn(e); }
+  }
+  if(manual && !got) toast('Noch nicht fertig – ' + cloudEta(pend[0].cloud) + '.', 3500);
+  if(got && !$('#lib').hidden) renderLib();
+}
+function startCloudTimer(){
+  if(cloudTimer) return;
+  cloudTimer = setInterval(async () => {
+    if(document.hidden) return;
+    if(!(await DB.all('recs')).some(cloudPending)){ clearInterval(cloudTimer); cloudTimer = null; return; }
+    cloudPoll(false);
+  }, 45000);
+}
+document.addEventListener('visibilitychange', () => { if(!document.hidden) cloudPoll(false); });
+async function applyCloudResult(r, data){
+  const fresh = (await DB.get('recs', r.id)) || r, isCur = cur && cur.id === r.id && !$('#player').hidden;
+  if(data.error || !Array.isArray(data.segments)){
+    fresh.cloud = {...fresh.cloud, done: Date.now(), error: String(data.error || 'Unbekannter Fehler')};
+    await DB.put('recs', fresh); if(isCur){ Object.assign(cur, fresh); if(!segs.length) renderTx(); }
+    toast('Cloud-Fehler bei „' + fresh.name + '“: ' + fresh.cloud.error.slice(0, 140), 7000); return;
+  }
+  fresh.whisperSegs = data.segments.map(g => ({s: g.s, e: g.e, t: g.t, words: g.words || []}));
+  fresh.segments = cleanSegs(fresh.whisperSegs.map(g => ({s: g.s, e: g.e, t: applyGlossary(g.t)})));
+  fresh.cloud = {...fresh.cloud, done: Date.now(), secs: data.seconds || 0};
+  fresh.tSource = 'cloud'; fresh.tDone = data.duration || fresh.duration; fresh.tModel = data.model;
+  fresh.needsAlign = !!(fresh.userText && fresh.userText.trim());
+  await DB.put('recs', fresh);
+  toast('„' + fresh.name + '“: Transkript ist da ✓', 4000);
+  if(isCur){ Object.assign(cur, fresh); segs = fresh.segments; renderTx(); if(fresh.needsAlign) autoAlign(); }
+}
+async function autoAlign(){
+  if(!cur || !cur.needsAlign || !cur.userText || !cur.whisperSegs || TX.busy) return;
+  toast('Dein Text wird mit der Aufnahme synchronisiert…', 3000);
+  TX.busy = true;
+  try{ const a = await DB.get('audio', cur.id); const pcm = await decode16k(a.blob); await doAlign(cur.userText, 'whisper', pcm); }
+  catch(e){ console.error(e); toast('Abgleich fehlgeschlagen: ' + (e.message || e)); }
+  finally{ TX.busy = false; }
+}
+
+/* boot */
+DB.open().then(loadGloss).then(migrateOldGloss).then(renderLib).then(() => setTimeout(() => { cloudPoll(false); startCloudTimer(); }, 1200)).catch(err => { $('#recList').innerHTML = `<div class="empty">Speicher nicht verfügbar (${esc(err.message)}). Bitte nicht im privaten Modus öffnen.</div>`; });
+window.__HT = {alignToSegs, get segs(){return segs}, set segs(v){segs=v}, persistSegs, renderTx, decode16k, nextCut, cleanSegs, encodeWav, parseSubs, toSrt, S, shadow, openWord};
+</script>
+</body>
+</html>
