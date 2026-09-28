@@ -93,7 +93,7 @@ struct SearchView: View {
             ordered.append((key: title, value: meetingSections[title] ?? []))
         }
 
-        for (key, value) in ["Word list", "Dictionary", "Redemittel"] {
+        for key in ["Word list", "Dictionary", "Redemittel"] {
             if let results = sections[key] {
                 ordered.append((key: key, value: results))
             }
