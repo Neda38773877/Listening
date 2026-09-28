@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - '**'
+  pull_request:
+
+jobs:
+  core-tests:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_16.4.app || true
+      - name: Show Xcode version
+        run: xcodebuild -version
+      - name: Run MeetingCore tests
+        working-directory: Packages/MeetingCore
+        run: swift test
+
+  app-build:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_16.4.app || true
+      - name: Show Xcode version
+        run: xcodebuild -version
+      - name: Install xcodegen
+        run: brew install xcodegen
+      - name: Generate project
+        run: xcodegen generate
+      - name: Build for testing
+        run: set -o pipefail && xcodebuild build-for-testing -project HoerenTrainer.xcodeproj -scheme HoerenTrainer -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO | tee build.log
+      - name: Show build errors
+        if: failure()
+        run: grep -n "error:" build.log | head -100
+
+  app-ui-tests:
+    runs-on: macos-15
+    needs: app-build
+    steps:
+      - uses: actions/checkout@v4
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_16.4.app || true
+      - name: Install xcodegen
+        run: brew install xcodegen
+      - name: Generate project
+        run: xcodegen generate
+      - name: Pick simulator
+        run: |
+          UDID=$(xcrun simctl list devices available -j | python3 -c "import json,sys; d=json.load(sys.stdin)['devices']; print(next(x['udid'] for k,v in d.items() if 'iOS' in k for x in v if x['name'].startswith('iPhone')))")
+          echo "SIMULATOR_UDID=$UDID" >> $GITHUB_ENV
+      - name: Run UI tests
+        run: xcodebuild test -project HoerenTrainer.xcodeproj -scheme HoerenTrainer -destination "id=${{ env.SIMULATOR_UDID }}" CODE_SIGNING_ALLOWED=NO
+
+  pv-analyzer:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run PV analyzer tests
+        working-directory: pv-analyzer
+        run: python -m unittest discover -s tests -v
