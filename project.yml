@@ -1,0 +1,46 @@
+name: HoerenTrainer
+options:
+  bundleIdPrefix: com.hoerentrainer
+  deploymentTarget:
+    iOS: "18.0"
+  createIntermediateGroups: true
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    MARKETING_VERSION: "1.0"
+    CURRENT_PROJECT_VERSION: "1"
+packages:
+  MeetingCore:
+    path: Packages/MeetingCore
+targets:
+  HoerenTrainer:
+    type: application
+    platform: iOS
+    sources:
+      - path: App/Sources
+      - path: App/Resources
+    dependencies:
+      - package: MeetingCore
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.hoerentrainer.app
+        TARGETED_DEVICE_FAMILY: "1,2"
+        INFOPLIST_FILE: App/Info.plist
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        CODE_SIGN_STYLE: Automatic
+        ENABLE_PREVIEWS: YES
+  HoerenTrainerUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: App/UITests
+    dependencies:
+      - target: HoerenTrainer
+schemes:
+  HoerenTrainer:
+    build:
+      targets:
+        HoerenTrainer: all
+    test:
+      targets:
+        - HoerenTrainerUITests

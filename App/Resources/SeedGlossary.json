@@ -1,0 +1,1052 @@
+[
+ {
+  "term": "Laminator",
+  "persian": "دستگاه لمینیتور (پرس)",
+  "kind": "term",
+  "priority": true
+ },
+ {
+  "term": "Lamination",
+  "persian": "لمینیشن",
+  "kind": "term",
+  "priority": true
+ },
+ {
+  "term": "Laminieren",
+  "persian": "لمینیت کردن",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Laminat",
+  "persian": "لمینیت",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Laminatinspektion",
+  "persian": "بازرسی لمینیت",
+  "kind": "term",
+  "priority": true
+ },
+ {
+  "term": "Laminatkante",
+  "persian": "لبهٔ لمینیت",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Potting",
+  "persian": "پاتینگ (پر کردن با رزین)",
+  "kind": "term",
+  "priority": true
+ },
+ {
+  "term": "Vergussmasse",
+  "persian": "مادهٔ پاتینگ",
+  "kind": "term",
+  "priority": true
+ },
+ {
+  "term": "Verguss",
+  "persian": "پاتینگ، ریخته‌گری",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Modulkontrolle",
+  "persian": "کنترل ماژول",
+  "kind": "term",
+  "priority": true
+ },
+ {
+  "term": "Modulinspektion",
+  "persian": "بازرسی ماژول",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Sichtprüfung",
+  "persian": "بازرسی چشمی",
+  "kind": "term",
+  "priority": true
+ },
+ {
+  "term": "Elektrolumineszenz",
+  "persian": "الکترولومینسانس",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "EL-Bild",
+  "persian": "تصویر EL",
+  "kind": "term",
+  "priority": true
+ },
+ {
+  "term": "EL-Bilder",
+  "persian": "تصاویر EL",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "EL-Bewertung",
+  "persian": "ارزیابی EL",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Pre-EL",
+  "persian": "EL قبل از لمینیشن",
+  "kind": "term",
+  "priority": true
+ },
+ {
+  "term": "Fehlerkatalog",
+  "persian": "کاتالوگ خطا",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Fehlercode",
+  "persian": "کد خطا",
+  "kind": "term",
+  "priority": true
+ },
+ {
+  "term": "Fehlerquote",
+  "persian": "نرخ خطا",
+  "kind": "term",
+  "priority": true
+ },
+ {
+  "term": "Fehlerbild",
+  "persian": "الگوی خطا",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Zellbruch",
+  "persian": "شکستگی سلول",
+  "kind": "term",
+  "priority": true
+ },
+ {
+  "term": "Mikroriss",
+  "persian": "ریزترک",
+  "kind": "term",
+  "priority": true
+ },
+ {
+  "term": "Mikrorisse",
+  "persian": "ریزترک‌ها",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Zellkante",
+  "persian": "لبهٔ سلول",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Zellmatrix",
+  "persian": "ماتریس سلول‌ها",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Zellfragment",
+  "persian": "تکهٔ سلول",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Blasen",
+  "persian": "حباب‌ها",
+  "kind": "term",
+  "priority": true
+ },
+ {
+  "term": "Blasencluster",
+  "persian": "خوشهٔ حباب",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Hohlräume",
+  "persian": "حفره‌ها",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Delamination",
+  "persian": "جدایش لایه‌ها",
+  "kind": "term",
+  "priority": true
+ },
+ {
+  "term": "Verschmutzung",
+  "persian": "آلودگی",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Verunreinigung",
+  "persian": "ناخالصی، آلودگی",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Fremdkörper",
+  "persian": "جسم خارجی",
+  "kind": "term",
+  "priority": true
+ },
+ {
+  "term": "Partikel",
+  "persian": "ذره",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Kratzer",
+  "persian": "خراش",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Glasbruch",
+  "persian": "شکستگی شیشه",
+  "kind": "term",
+  "priority": true
+ },
+ {
+  "term": "Glaskante",
+  "persian": "لبهٔ شیشه",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Frontglas",
+  "persian": "شیشهٔ جلو",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Einbettmaterial",
+  "persian": "مادهٔ انکپسولانت",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Encapsulant",
+  "persian": "انکپسولانت",
+  "kind": "term",
+  "priority": true
+ },
+ {
+  "term": "Verfärbung",
+  "persian": "تغییر رنگ",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Verformung",
+  "persian": "تغییر شکل",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Rahmen",
+  "persian": "قاب",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Rahmenecken",
+  "persian": "گوشه‌های قاب",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Rahmenkante",
+  "persian": "لبهٔ قاب",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Gehrung",
+  "persian": "اتصال گونیایی قاب",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Silikonnaht",
+  "persian": "درز سیلیکون",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Silikonüberstand",
+  "persian": "سیلیکون اضافه",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Kantenband",
+  "persian": "نوار لبه",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Edge-Tape",
+  "persian": "نوار لبه",
+  "kind": "term",
+  "priority": true
+ },
+ {
+  "term": "Abdeckstreifen",
+  "persian": "نوار پوششی",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Anschlussdose",
+  "persian": "جعبه اتصال",
+  "kind": "term",
+  "priority": true
+ },
+ {
+  "term": "Junction Box",
+  "persian": "جعبه اتصال",
+  "kind": "term",
+  "priority": true
+ },
+ {
+  "term": "Stecker",
+  "persian": "کانکتور",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Lötstelle",
+  "persian": "نقطهٔ لحیم",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Kontaktfehler",
+  "persian": "خطای اتصال",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Kurzschluss",
+  "persian": "اتصال کوتاه",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Übergangswiderstand",
+  "persian": "مقاومت اتصال",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Bussbar",
+  "persian": "باس‌بار",
+  "kind": "term",
+  "priority": true
+ },
+ {
+  "term": "Ribbon",
+  "persian": "ریبون (نوار مسی)",
+  "kind": "term",
+  "priority": true
+ },
+ {
+  "term": "ECA-Tape",
+  "persian": "نوار چسب رسانا (ECA)",
+  "kind": "term",
+  "priority": true
+ },
+ {
+  "term": "ECA-Overflow",
+  "persian": "بیرون‌زدگی چسب رسانا",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Cu-Tape",
+  "persian": "نوار مسی",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "EPE-Tape",
+  "persian": "نوار EPE",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Randisolationsabstand",
+  "persian": "فاصلهٔ عایقی لبه",
+  "kind": "term",
+  "priority": true
+ },
+ {
+  "term": "Isolationsabstand",
+  "persian": "فاصلهٔ عایقی",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Laminat-Label",
+  "persian": "برچسب لمینیت",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "QR-Code-Label",
+  "persian": "برچسب کد QR",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Abdichtung",
+  "persian": "آب‌بندی",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Verbinder",
+  "persian": "رابط، شینه",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Strings",
+  "persian": "رشته‌های سلول",
+  "kind": "term",
+  "priority": true
+ },
+ {
+  "term": "Stromkreis",
+  "persian": "مدار",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Leistungsmessung",
+  "persian": "اندازه‌گیری توان",
+  "kind": "term",
+  "priority": true
+ },
+ {
+  "term": "Leistungsverlust",
+  "persian": "افت توان",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Leistungsklasse",
+  "persian": "کلاس توان",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Flasher",
+  "persian": "فلاشر (تست IV)",
+  "kind": "term",
+  "priority": true
+ },
+ {
+  "term": "Füllfaktor",
+  "persian": "فیل فاکتور",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Kalibrierung",
+  "persian": "کالیبراسیون",
+  "kind": "term",
+  "priority": true
+ },
+ {
+  "term": "Degradation",
+  "persian": "تخریب، افت عملکرد",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Hi-pot",
+  "persian": "تست Hi-pot",
+  "kind": "term",
+  "priority": true
+ },
+ {
+  "term": "Wet-Leakage-Test",
+  "persian": "تست نشتی مرطوب",
+  "kind": "term",
+  "priority": true
+ },
+ {
+  "term": "Surveillance-Test",
+  "persian": "تست نظارتی",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Nacharbeit",
+  "persian": "بازکاری",
+  "kind": "term",
+  "priority": true
+ },
+ {
+  "term": "Ausschuss",
+  "persian": "ضایعات",
+  "kind": "term",
+  "priority": true
+ },
+ {
+  "term": "Abwertung",
+  "persian": "کاهش درجه",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Freigabe",
+  "persian": "آزادسازی، تأیید",
+  "kind": "term",
+  "priority": true
+ },
+ {
+  "term": "Charge",
+  "persian": "بچ، دسته",
+  "kind": "term",
+  "priority": true
+ },
+ {
+  "term": "Abweichung",
+  "persian": "انحراف",
+  "kind": "term",
+  "priority": true
+ },
+ {
+  "term": "Maßnahme",
+  "persian": "اقدام",
+  "kind": "term",
+  "priority": true
+ },
+ {
+  "term": "Ursache",
+  "persian": "علت",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Auswirkung",
+  "persian": "اثر، پیامد",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Grenzwert",
+  "persian": "حد مجاز",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Kriterien",
+  "persian": "معیارها",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Spezifikation",
+  "persian": "مشخصات فنی",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Stückzahl",
+  "persian": "تعداد",
+  "kind": "term",
+  "priority": true
+ },
+ {
+  "term": "Taktzeit",
+  "persian": "زمان تکت",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Zykluszeit",
+  "persian": "زمان سیکل",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Stillstand",
+  "persian": "توقف خط",
+  "kind": "term",
+  "priority": true
+ },
+ {
+  "term": "Verfügbarkeit",
+  "persian": "دسترس‌پذیری",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Rückverfolgbarkeit",
+  "persian": "ردیابی",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Seriennummer",
+  "persian": "شمارهٔ سریال",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Palette",
+  "persian": "پالت",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Morgenmeeting",
+  "persian": "جلسهٔ صبح",
+  "kind": "term",
+  "priority": true
+ },
+ {
+  "term": "Messdaten",
+  "persian": "داده‌های اندازه‌گیری",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Auswertung",
+  "persian": "تحلیل داده",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Bewertung",
+  "persian": "ارزیابی",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Feststellung",
+  "persian": "یافته، تشخیص",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Abstimmung",
+  "persian": "هماهنگی",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Durchführung",
+  "persian": "اجرا",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Überprüfung",
+  "persian": "بازبینی",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Anforderung",
+  "persian": "الزام",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Vermutung",
+  "persian": "حدس، فرضیه",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Lieferant",
+  "persian": "تأمین‌کننده",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Befund",
+  "persian": "یافته",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Bediener",
+  "persian": "اپراتور",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Wabenstruktur",
+  "persian": "ساختار لانه‌زنبوری",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Polarität",
+  "persian": "قطبیت",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Kontaktierung",
+  "persian": "اتصال‌دهی",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Ausbruch",
+  "persian": "لب‌پریدگی",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Einschlüsse",
+  "persian": "آخال، ذرات محبوس",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Fingerabdrücke",
+  "persian": "اثر انگشت",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Silizium",
+  "persian": "سیلیسیم",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Trimming",
+  "persian": "برش لبه‌ها",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Framing",
+  "persian": "قاب‌زنی",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Dashboard",
+  "persian": "داشبورد",
+  "kind": "term",
+  "priority": true
+ },
+ {
+  "term": "Power BI",
+  "persian": "Power BI",
+  "kind": "term",
+  "priority": true
+ },
+ {
+  "term": "MES",
+  "persian": "سیستم اجرای تولید",
+  "kind": "term",
+  "priority": true
+ },
+ {
+  "term": "OEE",
+  "persian": "اثربخشی کلی تجهیزات",
+  "kind": "term",
+  "priority": true
+ },
+ {
+  "term": "Pareto",
+  "persian": "نمودار پارتو",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "Heatmap",
+  "persian": "نقشهٔ حرارتی",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "OSM460",
+  "persian": "ماژول OSM460",
+  "kind": "term",
+  "priority": true
+ },
+ {
+  "term": "OPES",
+  "persian": "OPES",
+  "kind": "term",
+  "priority": true
+ },
+ {
+  "term": "Zwenkau",
+  "persian": "Zwenkau",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "IEC 61215",
+  "persian": "استاندارد IEC 61215",
+  "kind": "term",
+  "priority": true
+ },
+ {
+  "term": "IEC 61730",
+  "persian": "استاندارد IEC 61730",
+  "kind": "term",
+  "priority": false
+ },
+ {
+  "term": "IV-Kurve",
+  "persian": "منحنی IV",
+  "kind": "term",
+  "priority": true
+ },
+ {
+  "term": "Klasse A",
+  "persian": "کلاس A",
+  "kind": "term",
+  "priority": true
+ },
+ {
+  "term": "feststellen",
+  "persian": "تشخیص دادن",
+  "kind": "verb",
+  "priority": false
+ },
+ {
+  "term": "festlegen",
+  "persian": "تعیین کردن",
+  "kind": "verb",
+  "priority": false
+ },
+ {
+  "term": "abstimmen",
+  "persian": "هماهنگ کردن",
+  "kind": "verb",
+  "priority": false
+ },
+ {
+  "term": "klären",
+  "persian": "روشن کردن",
+  "kind": "verb",
+  "priority": false
+ },
+ {
+  "term": "durchführen",
+  "persian": "انجام دادن",
+  "kind": "verb",
+  "priority": false
+ },
+ {
+  "term": "auswerten",
+  "persian": "تحلیل کردن",
+  "kind": "verb",
+  "priority": false
+ },
+ {
+  "term": "bewerten",
+  "persian": "ارزیابی کردن",
+  "kind": "verb",
+  "priority": false
+ },
+ {
+  "term": "prüfen",
+  "persian": "بررسی کردن",
+  "kind": "verb",
+  "priority": false
+ },
+ {
+  "term": "überprüfen",
+  "persian": "بازبینی کردن",
+  "kind": "verb",
+  "priority": false
+ },
+ {
+  "term": "bestätigen",
+  "persian": "تأیید کردن",
+  "kind": "verb",
+  "priority": false
+ },
+ {
+  "term": "nacharbeiten",
+  "persian": "بازکاری کردن",
+  "kind": "verb",
+  "priority": false
+ },
+ {
+  "term": "anpassen",
+  "persian": "تطبیق دادن",
+  "kind": "verb",
+  "priority": false
+ },
+ {
+  "term": "ausschleusen",
+  "persian": "از خط خارج کردن",
+  "kind": "verb",
+  "priority": false
+ },
+ {
+  "term": "umstellen",
+  "persian": "تغییر دادن",
+  "kind": "verb",
+  "priority": false
+ },
+ {
+  "term": "umsetzen",
+  "persian": "اجرا کردن",
+  "kind": "verb",
+  "priority": false
+ },
+ {
+  "term": "sicherstellen",
+  "persian": "اطمینان حاصل کردن",
+  "kind": "verb",
+  "priority": false
+ },
+ {
+  "term": "vorbereiten",
+  "persian": "آماده کردن",
+  "kind": "verb",
+  "priority": false
+ },
+ {
+  "term": "darstellen",
+  "persian": "نمایش دادن",
+  "kind": "verb",
+  "priority": false
+ },
+ {
+  "term": "übernehmen",
+  "persian": "بر عهده گرفتن",
+  "kind": "verb",
+  "priority": false
+ },
+ {
+  "term": "anlegen",
+  "persian": "ایجاد کردن (در سیستم)",
+  "kind": "verb",
+  "priority": false
+ },
+ {
+  "term": "einhalten",
+  "persian": "رعایت کردن",
+  "kind": "verb",
+  "priority": false
+ },
+ {
+  "term": "erfüllen",
+  "persian": "برآورده کردن",
+  "kind": "verb",
+  "priority": false
+ },
+ {
+  "term": "nachweisen",
+  "persian": "اثبات کردن",
+  "kind": "verb",
+  "priority": false
+ },
+ {
+  "term": "verhindern",
+  "persian": "جلوگیری کردن",
+  "kind": "verb",
+  "priority": false
+ },
+ {
+  "term": "einstellen",
+  "persian": "تنظیم کردن",
+  "kind": "verb",
+  "priority": false
+ },
+ {
+  "term": "aussortieren",
+  "persian": "کنار گذاشتن",
+  "kind": "verb",
+  "priority": false
+ },
+ {
+  "term": "abschließen",
+  "persian": "به پایان رساندن",
+  "kind": "verb",
+  "priority": false
+ },
+ {
+  "term": "zurückstellen",
+  "persian": "عقب انداختن",
+  "kind": "verb",
+  "priority": false
+ },
+ {
+  "term": "erfassen",
+  "persian": "ثبت کردن",
+  "kind": "verb",
+  "priority": false
+ },
+ {
+  "term": "freigeben",
+  "persian": "آزاد کردن، تأیید کردن",
+  "kind": "verb",
+  "priority": false
+ },
+ {
+  "term": "abrufen",
+  "persian": "فراخوانی کردن (داده)",
+  "kind": "verb",
+  "priority": false
+ },
+ {
+  "term": "übereinstimmen",
+  "persian": "مطابقت داشتن",
+  "kind": "verb",
+  "priority": false
+ },
+ {
+  "term": "auftreten",
+  "persian": "رخ دادن",
+  "kind": "verb",
+  "priority": false
+ },
+ {
+  "term": "zurückführen",
+  "persian": "نسبت دادن",
+  "kind": "verb",
+  "priority": false
+ },
+ {
+  "term": "abstellen",
+  "persian": "برطرف کردن (علت)",
+  "kind": "verb",
+  "priority": false
+ },
+ {
+  "term": "verschieben",
+  "persian": "جابه‌جا کردن",
+  "kind": "verb",
+  "priority": false
+ },
+ {
+  "term": "vermuten",
+  "persian": "حدس زدن",
+  "kind": "verb",
+  "priority": false
+ }
+]
