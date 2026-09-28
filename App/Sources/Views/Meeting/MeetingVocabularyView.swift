@@ -290,6 +290,7 @@ struct MeetingVocabularyView: View {
                                 Text(term.persian)
                                     .font(.caption2)
                                     .foregroundStyle(.secondary)
+                                    .environment(\.layoutDirection, .rightToLeft)
                             }
                             Spacer()
                         }
