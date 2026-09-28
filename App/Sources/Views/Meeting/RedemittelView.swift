@@ -87,7 +87,7 @@ struct RedemittelView: View {
     private func foundHitRow(_ hit: RedemittelHit) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             // Category and pattern
-            (Text("\(hit.category.title): ") + Text(""") + Text("\(hit.matchedText)") + Text("""))
+            (Text("\(hit.category.title): ") + Text("“") + Text("\(hit.matchedText)") + Text("”"))
                 .font(.headline)
 
             // Full sentence with highlighted match

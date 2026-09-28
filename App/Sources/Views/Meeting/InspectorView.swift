@@ -653,7 +653,7 @@ struct SentenceCardView: View {
                     ForEach(hits, id: \.self) { hit in
                         HStack {
                             VStack(alignment: .leading, spacing: 4) {
-                                (Text("\(hit.category.title): ") + Text(""").font(.caption).fontWeight(.semibold) + Text("\(hit.matchedText)").font(.caption).fontWeight(.semibold) + Text(""").font(.caption).fontWeight(.semibold))
+                                (Text("\(hit.category.title): ") + Text("“").font(.caption).fontWeight(.semibold) + Text("\(hit.matchedText)").font(.caption).fontWeight(.semibold) + Text("”").font(.caption).fontWeight(.semibold))
                                     .font(.caption)
                                     .fontWeight(.semibold)
                                 Text("Pattern: \(hit.pattern)")
