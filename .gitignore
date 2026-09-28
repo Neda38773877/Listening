@@ -1,0 +1,4 @@
+__pycache__/
+*.pyc
+HoerenTrainer.xcodeproj/
+build.log
