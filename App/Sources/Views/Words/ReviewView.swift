@@ -145,6 +145,7 @@ struct ReviewSessionView: View {
     @Query(sort: \VocabItem.dateAdded) private var allItems: [VocabItem]
     @State private var position = 0
     @State private var order: [UUID] = []
+    @State private var requeued: Set<UUID> = []
     @State private var correctCount = 0
     @State private var wrongCount = 0
 
@@ -182,6 +183,7 @@ struct ReviewSessionView: View {
                             mode: chosenMode,
                             onGrade: recordGrade
                         )
+                        .id(position)
                         .padding()
                     }
                 }
@@ -231,8 +233,10 @@ struct ReviewSessionView: View {
             item.timesSeen += 1
             if grade == .again {
                 item.timesWrong += 1
-                if !order.contains(where: { $0 == order[position] && order.firstIndex(of: $0)! > position }) {
-                    order.append(order[position])
+                let id = order[position]
+                if !requeued.contains(id) {
+                    requeued.insert(id)
+                    order.append(id)
                 }
             }
             let kind: PracticeKind = grade == .again ? .reviewWrong : .review
@@ -267,17 +271,24 @@ struct ReviewCard: View {
             if revealed {
                 HStack(spacing: 12) {
                     ForEach([ReviewGrade.again, .hard, .good, .easy], id: \.self) { grade in
-                        Button(grade.title) {
-                            onGrade(grade)
+                        if grade == suggestedGrade {
+                            Button(grade.title) {
+                                onGrade(grade)
+                            }
+                            .buttonStyle(.borderedProminent)
+                            .frame(maxWidth: .infinity)
+                        } else {
+                            Button(grade.title) {
+                                onGrade(grade)
+                            }
+                            .buttonStyle(.bordered)
+                            .frame(maxWidth: .infinity)
                         }
-                        .buttonStyle(grade == suggestedGrade ? .borderedProminent : .bordered)
-                        .frame(maxWidth: .infinity)
                     }
                 }
                 .padding(.top)
             }
         }
-        .id(item.id)
         .onAppear {
             if mode == .multipleChoice && multipleChoiceOptions.isEmpty {
                 setupMultipleChoice()

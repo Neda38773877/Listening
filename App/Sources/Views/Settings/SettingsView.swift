@@ -7,6 +7,7 @@ struct SettingsView: View {
     @EnvironmentObject private var settings: AppSettings
     @State private var apiKey = ""
     @State private var showKeySaved = false
+    @State private var keyVersion = 0
     @State private var showDeleteVocabConfirm = false
     @State private var showDeleteHistoryConfirm = false
     @State private var showDeleteMeetingsConfirm = false
@@ -17,7 +18,7 @@ struct SettingsView: View {
                 Section("Playback") {
                     Picker("Default speed", selection: $settings.playbackRate) {
                         ForEach(PlaybackPlanner.speeds, id: \.self) { speed in
-                            Text(String(format: "%.2fx", speed)).tag(speed)
+                            Text(String(format: "%g×", speed)).tag(speed)
                         }
                     }
                     Toggle("Show English", isOn: $settings.showEnglish)
@@ -33,8 +34,13 @@ struct SettingsView: View {
                     Toggle("Replay after pause", isOn: $settings.shadowing.replayAfterPause)
                     Toggle("Record after", isOn: $settings.shadowing.recordAfter)
                     Toggle("Auto-advance", isOn: $settings.shadowing.autoAdvance)
-                    Slider(value: $settings.shadowing.pauseFactor, in: 1.0...2.5)
-                        .frame(height: 32)
+
+                    VStack(alignment: .leading) {
+                        Text("Pause length ×\(String(format: "%.1f", settings.shadowing.pauseFactor))")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        Slider(value: $settings.shadowing.pauseFactor, in: 1.0...2.5)
+                    }
                 }
 
                 Section("Dictionary") {
@@ -57,15 +63,18 @@ struct SettingsView: View {
                                     Keychain.save(apiKey, for: "anthropicAPIKey")
                                     apiKey = ""
                                     showKeySaved = true
+                                    keyVersion += 1
                                 }
                                 .disabled(apiKey.isEmpty)
                                 if settings.hasAPIKey {
                                     Button("Remove key", role: .destructive) {
                                         Keychain.delete("anthropicAPIKey")
+                                        keyVersion += 1
                                     }
                                 }
                             }
                         }
+                        .id(keyVersion)
                         if showKeySaved {
                             Text("Key saved")
                                 .font(.caption)
