@@ -12,6 +12,7 @@ struct WordListView: View {
     @State private var selectedStatus = "All"
     @State private var showAddSheet = false
     @State private var showCategoryManager = false
+    @State private var deleteItem: VocabItem?
 
     var body: some View {
         NavigationStack {
@@ -30,8 +31,7 @@ struct WordListView: View {
                             }
                             .swipeActions(edge: .trailing) {
                                 Button(role: .destructive) {
-                                    modelContext.delete(item)
-                                    try? modelContext.save()
+                                    deleteItem = item
                                 } label: {
                                     Label("Delete", systemImage: "trash")
                                 }
@@ -53,12 +53,26 @@ struct WordListView: View {
                     Menu {
                         Section("Category") {
                             ForEach(["All"] + allCategories, id: \.self) { cat in
-                                Button(cat) { selectedCategory = cat }
+                                Button(action: { selectedCategory = cat }) {
+                                    HStack {
+                                        Text(cat)
+                                        if cat == selectedCategory {
+                                            Label("", systemImage: "checkmark")
+                                        }
+                                    }
+                                }
                             }
                         }
                         Section("Status") {
                             ForEach(["All", "Learning", "Mastered", "Expressions", "Due now"], id: \.self) { status in
-                                Button(status) { selectedStatus = status }
+                                Button(action: { selectedStatus = status }) {
+                                    HStack {
+                                        Text(status)
+                                        if status == selectedStatus {
+                                            Label("", systemImage: "checkmark")
+                                        }
+                                    }
+                                }
                             }
                         }
                     } label: {
@@ -76,6 +90,22 @@ struct WordListView: View {
             }
             .sheet(isPresented: $showCategoryManager) {
                 CategoryManagerView()
+            }
+            .confirmationDialog("Delete Word", isPresented: .constant(deleteItem != nil)) {
+                Button("Delete", role: .destructive) {
+                    if let item = deleteItem {
+                        modelContext.delete(item)
+                        try? modelContext.save()
+                    }
+                    deleteItem = nil
+                }
+                Button("Cancel", role: .cancel) {
+                    deleteItem = nil
+                }
+            } message: {
+                if let item = deleteItem {
+                    Text("Delete \"\(item.german)\"?")
+                }
             }
             .safeAreaInset(edge: .bottom) {
                 Text("\(filteredItems.count) words")
@@ -98,6 +128,7 @@ struct WordListView: View {
                         Image(systemName: "speaker.wave.2")
                             .foregroundStyle(.blue)
                     }
+                    .buttonStyle(.borderless)
                 }
             }
             HStack(spacing: 8) {
@@ -158,7 +189,6 @@ struct WordListView: View {
     private var allCategories: [String] {
         var cats = Set(items.map(\.category))
         cats.formUnion(VocabCategory.allCases.map(\.rawValue))
-        // Also add custom categories
         let customCats = try? modelContext.fetch(FetchDescriptor<CustomCategory>())
         cats.formUnion(customCats?.map(\.name) ?? [])
         return cats.sorted()
